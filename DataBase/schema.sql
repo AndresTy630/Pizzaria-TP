@@ -38,6 +38,7 @@ create table Pedido(
 create table DetallePedido(
     idPedido int not null,
     idPizza int not null,
+    cantidad int not null,
     precioUnitario decimal(10,2) not null,
     constraint PK_DetallePedido primary key (idPedido, idPizza),
     constraint FK_DetallePedido_Pedido foreign key (idPedido)
