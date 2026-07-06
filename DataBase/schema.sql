@@ -26,7 +26,7 @@ create table Pedido(
     idPedido int not null auto_increment,
     idCliente int not null,
     fechaHora datetime not null,
-    estado varchar(30) not null,
+    estado int not null,
     direccionEntrega varchar(150) not null,
     total decimal(10,2) not null,
     constraint PK_Pedido primary key (idPedido),
@@ -38,7 +38,6 @@ create table Pedido(
 create table DetallePedido(
     idPedido int not null,
     idPizza int not null,
-    cantidad int not null,
     precioUnitario decimal(10,2) not null,
     constraint PK_DetallePedido primary key (idPedido, idPizza),
     constraint FK_DetallePedido_Pedido foreign key (idPedido)
