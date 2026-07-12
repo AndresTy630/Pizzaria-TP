@@ -5,7 +5,7 @@ using Pizzeria.Dominio.Entidades;
 using Pizzeria.Servicios.Interface;
 
 namespace Pizzeria.API.Endpoints;
-public static class CearPedidoDto
+public static class ClienteEndpoints
 {
     public static void MapClienteEndpoints(this IEndpointRouteBuilder app)
     {
