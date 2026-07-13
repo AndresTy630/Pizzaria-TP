@@ -9,9 +9,7 @@ public class ClienteService : IClienteService
     private readonly IClienteRepository _clienteRepository;
 
     public ClienteService(IClienteRepository clienteRepository)
-    {
-        _clienteRepository = clienteRepository;
-    }
+            => _clienteRepository = clienteRepository;
 
     public async Task<int> RegistrarClienteAsync(Cliente cliente)
     {
@@ -22,7 +20,5 @@ public class ClienteService : IClienteService
     }
 
     public async Task<Cliente?> ObtenerClienteAsync(int id)
-    {
-        return await _clienteRepository.ObtenerPorIdAsync(id);
-    }
+            => await _clienteRepository.ObtenerPorIdAsync(id);
 }

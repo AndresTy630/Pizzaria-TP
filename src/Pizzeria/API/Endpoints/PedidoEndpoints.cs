@@ -39,7 +39,7 @@ public static class PedidoEndpoints
                 }
 
                 var id = await pedidoService.CrearPedidoAsync(nuevoPedido);
-                return Results.Created($"/api/pedidos/{id}", new { IdPedido = id, Mensaje = "Pedido recibido, comenzando preparación." });
+                return Results.Created($"/api/pedidos/{id}", new { IdPedido = id, Mensaje = "Pedido recibido, comenzando preparacion." });
             }
             catch (ArgumentException ex)
             {

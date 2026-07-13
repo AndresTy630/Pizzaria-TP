@@ -23,13 +23,14 @@ public class Pedido
         FechaHora = DateTime.Now;
     }
 
-    public void CalcularTotal()
-    {
-        if (Detalles == null || !Detalles.Any())
-            Total = 0;
-        else
-            Total = Detalles.Sum(d => d.Cantidad * d.PrecioUnitario);
-    }
+    public void CalcularTotal() =>
+        /*    if (Detalles == null || !Detalles.Any())
+Total = 0;
+else
+Total = Detalles.Sum(d => d.Cantidad * d.PrecioUnitario);*/
+
+        Total = (Detalles is null || Detalles.Count == 0) ?
+            0 : Detalles.Sum(d => d.Cantidad * d.PrecioUnitario);
 
     public void AgregarDetalle(DetallePedido detalle)
     {

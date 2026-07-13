@@ -43,9 +43,7 @@ public class PedidoService : IPedidoService
     }
 
     public async Task<Pedido?> ObtenerPedidoAsync(int id)
-    {
-        return await _pedidoRepository.ObtenerPorIdAsync(id);
-    }
+            => await _pedidoRepository.ObtenerPorIdAsync(id);
 
     public async Task CambiarEstadoPedidoAsync(int idPedido, EstadoPedido nuevoEstado)
     {
