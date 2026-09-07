@@ -9,9 +9,9 @@ USE 5to_Pizzeria;
 
 CREATE TABLE Sucursal(
     idSucursal INT NOT NULL AUTO_INCREMENT,
-    nombre VARCHAR(100) NOT NULL,
     direccion VARCHAR(150) NOT NULL,
     telefono VARCHAR(20),
+    activa BOOLEAN NOT NULL DEFAULT TRUE,
 
     CONSTRAINT PK_Sucursal PRIMARY KEY (idSucursal)
 );
@@ -29,15 +29,39 @@ CREATE TABLE Usuario(
     passwordHash VARCHAR(255) NOT NULL,
     telefono VARCHAR(20),
     direccion VARCHAR(150),
-    rol INT NOT NULL,
-    
+
     CONSTRAINT PK_Usuario PRIMARY KEY (idUsuario),
     CONSTRAINT UQ_Usuario_Email UNIQUE (email)
 );
 
 
 -- ==========================================
--- 3. PIZZAS
+-- 3. EMPLEADOS
+-- ==========================================
+
+CREATE TABLE Empleado(
+    idEmpleado INT NOT NULL AUTO_INCREMENT,
+    idUsuario INT NOT NULL,
+    idSucursal INT NOT NULL,
+    rol INT NOT NULL,
+
+    CONSTRAINT PK_Empleado PRIMARY KEY (idEmpleado),
+
+    CONSTRAINT UQ_Empleado_Usuario
+        UNIQUE (idUsuario),
+
+    CONSTRAINT FK_Empleado_Usuario
+        FOREIGN KEY (idUsuario)
+        REFERENCES Usuario(idUsuario),
+
+    CONSTRAINT FK_Empleado_Sucursal
+        FOREIGN KEY (idSucursal)
+        REFERENCES Sucursal(idSucursal)
+);
+
+
+-- ==========================================
+-- 4. PIZZAS
 -- ==========================================
 
 CREATE TABLE Pizza(
@@ -52,7 +76,7 @@ CREATE TABLE Pizza(
 
 
 -- ==========================================
--- 4. PEDIDOS
+-- 5. PEDIDOS
 -- ==========================================
 
 CREATE TABLE Pedido(
@@ -78,12 +102,12 @@ CREATE TABLE Pedido(
 
     CONSTRAINT FK_Pedido_Repartidor
         FOREIGN KEY (idRepartidor)
-        REFERENCES Usuario(idUsuario)
+        REFERENCES Empleado(idEmpleado)
 );
 
 
 -- ==========================================
--- 5. DETALLE DEL PEDIDO
+-- 6. DETALLE DEL PEDIDO
 -- ==========================================
 
 CREATE TABLE DetallePedido(
