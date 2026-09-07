@@ -11,11 +11,11 @@ public static class ClienteEndpoints
     {
         var grupo = app.MapGroup("/api/clientes").WithTags("Gestión de Clientes");
 
-        grupo.MapPost("/", async (Cliente cliente, IClienteService clienteService) =>
+        grupo.MapPost("/", async (Usuario cliente, IUsuarioService clienteService) =>
         {
             try
             {
-                var id = await clienteService.RegistrarClienteAsync(cliente);
+                var id = await clienteService.RegistrarUsuarioAsync(cliente);
                 return Results.Created($"/api/clientes/{id}", new { IdCliente = id, Mensaje = "Cliente registrado." });
             }
             catch (ArgumentException ex)
@@ -24,9 +24,9 @@ public static class ClienteEndpoints
             }
         });
 
-        grupo.MapGet("/{id}", async (int id, IClienteService clienteService) =>
+        grupo.MapGet("/{id}", async (int id, IUsuarioService clienteService) =>
         {
-            var cliente = await clienteService.ObtenerClienteAsync(id);
+            var cliente = await clienteService.ObtenerUsuarioAsync(id);
             return cliente is not null ? Results.Ok(cliente) : Results.NotFound("Cliente no encontrado.");
         });
     }

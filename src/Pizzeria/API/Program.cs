@@ -11,12 +11,12 @@ builder.Services.AddSwaggerGen();
 
 // Capa de Datos (Repositorios)
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
-builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPizzaRepository, PizzaRepository>();
 
 // Capa de Negocio (Servicios)
 builder.Services.AddScoped<IPedidoService, PedidoService>();
-builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPizzaService, PizzaService>();
 
 

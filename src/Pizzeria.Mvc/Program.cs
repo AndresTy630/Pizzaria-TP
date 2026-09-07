@@ -10,12 +10,12 @@ builder.Services.AddControllersWithViews();
 
 // Repositorios
 builder.Services.AddScoped<IPizzaRepository, PizzaRepository>();
-builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 
 // Servicios
 builder.Services.AddScoped<IPizzaService, PizzaService>();
-builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 
 var app = builder.Build();

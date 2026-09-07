@@ -19,7 +19,11 @@ public class UsuarioService : IUsuarioService
         if (string.IsNullOrWhiteSpace(user.Apellido))
             throw new ArgumentException("El nombre del cliente es obligatorio.");
 
-        if(user.UserName )
+        if (string.IsNullOrWhiteSpace(user.Pass))
+            throw new ArgumentException("La contraseña del cliente es obligatorio.");
+        
+        if (string.IsNullOrWhiteSpace(user.Telefono))
+            throw new ArgumentException("El telefono del cliente es obligatorio.");
 
         return await _usuarioRepository.CrearUsuarioAsync(user);
     }
