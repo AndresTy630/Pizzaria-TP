@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Pizzeria\Servicios\Servicios.csproj" />
+    <ProjectReference Include="..\Pizzeria\Dominio\Dominio.csproj" />
+    <ProjectReference Include="..\Pizzeria\Persistencia\Persistencia.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

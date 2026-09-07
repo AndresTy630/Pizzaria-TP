@@ -1,0 +1,23 @@
+﻿.navbar {
+  min-height: 70px;
+}
+
+.navbar-brand {
+  font-size: 1.4rem;
+}
+
+.navbar .btn {
+  border: none;
+}
+
+.navbar .btn-danger:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.navbar .btn-warning {
+  font-weight: 600;
+}
+
+footer {
+  min-height: 60px;
+}

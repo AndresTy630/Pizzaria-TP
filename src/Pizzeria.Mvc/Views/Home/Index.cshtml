@@ -1,0 +1,103 @@
+﻿@model IEnumerable<Pizzeria.Dominio.Entidades.Pizza>
+
+@{
+ViewData["Title"] = "Pizzería";
+}
+
+<!-- INICIO -->
+
+<section class="bg-warning-subtle text-center py-5">
+
+<div class="container py-4">
+
+    <img src="~/images/logo.png"
+         class="img-fluid mb-4"
+         width="400"
+         alt="Logo de la pizzería">
+
+    <h1 class="display-4 fw-bold">
+        La mejor pizza de la ciudad
+    </h1>
+
+    <p class="lead">
+        Pizzas caseras, ingredientes frescos y mucho sabor.
+    </p>
+
+    <a href="#menu" class="btn btn-danger btn-lg mt-3">
+        Ver menú
+    </a>
+
+</div>
+
+</section>
+
+<!-- MENU -->
+
+<section id="menu" class="container my-5">
+
+<h2 class="text-center fw-bold mb-5">
+    Nuestras pizzas
+</h2>
+
+<div class="row">
+
+    @foreach (var pizza in Model)
+    {
+        <div class="col-md-4 mb-4">
+
+            <div class="card text-center h-100 shadow-sm">
+
+                <div class="card-body p-4">
+
+                    <h3 class="card-title fw-bold">
+                        @pizza.Nombre
+                    </h3>
+
+                    <p class="card-text mt-3">
+                        @pizza.Descripcion
+                    </p>
+
+                    <h4 class="fw-bold text-danger mt-4">
+                        $@pizza.Precio.ToString("N2")
+                    </h4>
+
+                    <button class="btn btn-danger mt-3">
+                        Pedir
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+</section>
+
+<!-- CONTACTO -->
+
+<section id="contacto" class="bg-warning-subtle text-center py-5">
+
+<div class="container">
+
+    <h2 class="fw-bold mb-4">
+        Contacto
+    </h2>
+
+    <p class="fs-5">
+        📞 11 1234-5678
+    </p>
+
+    <p class="fs-5">
+        📍 Av. Libertador 5088
+    </p>
+
+    <a href="#menu" class="btn btn-danger btn-lg mt-2">
+        Pedir ahora
+    </a>
+
+</div>
+
+</section>
