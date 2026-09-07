@@ -1,48 +1,105 @@
-drop database if exists bd_Pizzeria;
-create database bd_Pizzeria;
-use bd_Pizzeria;
+DROP DATABASE IF EXISTS 5to_Pizzeria;
+CREATE DATABASE 5to_Pizzeria;
+USE 5to_Pizzeria;
 
 
-create table Cliente(
-    idCliente int not null auto_increment,
-    nombre varchar(100) not null,
-    telefono varchar(20) not null,
-    direccion varchar(150) not null,
-    constraint PK_Cliente primary key (idCliente)
+-- ==========================================
+-- 1. SUCURSALES
+-- ==========================================
+
+CREATE TABLE Sucursal(
+    idSucursal INT NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    direccion VARCHAR(150) NOT NULL,
+    telefono VARCHAR(20),
+
+    CONSTRAINT PK_Sucursal PRIMARY KEY (idSucursal)
 );
 
 
-create table Pizza(
-    idPizza int not null auto_increment,
-    nombre varchar(100) not null,
-    descripcion varchar(255),
-    precio decimal(10,2) not null,
-    disponible boolean not null,
-    constraint PK_Pizza primary key (idPizza)
+-- ==========================================
+-- 2. USUARIOS
+-- ==========================================
+
+CREATE TABLE Usuario(
+    idUsuario INT NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    passwordHash VARCHAR(255) NOT NULL,
+    telefono VARCHAR(20),
+    direccion VARCHAR(150),
+    rol INT NOT NULL,
+    
+    CONSTRAINT PK_Usuario PRIMARY KEY (idUsuario),
+    CONSTRAINT UQ_Usuario_Email UNIQUE (email)
 );
 
 
-create table Pedido(
-    idPedido int not null auto_increment,
-    idCliente int not null,
-    fechaHora datetime not null,
-    estado int not null,
-    direccionEntrega varchar(150) not null,
-    total decimal(10,2) not null,
-    constraint PK_Pedido primary key (idPedido),
-    constraint FK_Pedido_Cliente foreign key (idCliente)
-        references Cliente(idCliente)
+-- ==========================================
+-- 3. PIZZAS
+-- ==========================================
+
+CREATE TABLE Pizza(
+    idPizza INT NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion VARCHAR(255),
+    precio DECIMAL(10,2) NOT NULL,
+    disponible BOOLEAN NOT NULL DEFAULT TRUE,
+
+    CONSTRAINT PK_Pizza PRIMARY KEY (idPizza)
 );
 
 
-create table DetallePedido(
-    idPedido int not null,
-    idPizza int not null,
-    cantidad int not null,
-    precioUnitario decimal(10,2) not null,
-    constraint PK_DetallePedido primary key (idPedido, idPizza),
-    constraint FK_DetallePedido_Pedido foreign key (idPedido)
-        references Pedido(idPedido),
-    constraint FK_DetallePedido_Pizza foreign key (idPizza)
-        references Pizza(idPizza)
+-- ==========================================
+-- 4. PEDIDOS
+-- ==========================================
+
+CREATE TABLE Pedido(
+    idPedido INT NOT NULL AUTO_INCREMENT,
+    idUsuario INT NOT NULL,
+    idSucursal INT NOT NULL,
+    idRepartidor INT NULL,
+    fechaHora DATETIME NOT NULL,
+    estado INT NOT NULL,
+    tipoEntrega INT NOT NULL,
+    direccionEntrega VARCHAR(150) NULL,
+    total DECIMAL(10,2) NOT NULL,
+
+    CONSTRAINT PK_Pedido PRIMARY KEY (idPedido),
+
+    CONSTRAINT FK_Pedido_Usuario
+        FOREIGN KEY (idUsuario)
+        REFERENCES Usuario(idUsuario),
+
+    CONSTRAINT FK_Pedido_Sucursal
+        FOREIGN KEY (idSucursal)
+        REFERENCES Sucursal(idSucursal),
+
+    CONSTRAINT FK_Pedido_Repartidor
+        FOREIGN KEY (idRepartidor)
+        REFERENCES Usuario(idUsuario)
+);
+
+
+-- ==========================================
+-- 5. DETALLE DEL PEDIDO
+-- ==========================================
+
+CREATE TABLE DetallePedido(
+    idPedido INT NOT NULL,
+    idPizza INT NOT NULL,
+    cantidad INT NOT NULL,
+    precioUnitario DECIMAL(10,2) NOT NULL,
+
+    CONSTRAINT PK_DetallePedido
+        PRIMARY KEY (idPedido, idPizza),
+
+    CONSTRAINT FK_DetallePedido_Pedido
+        FOREIGN KEY (idPedido)
+        REFERENCES Pedido(idPedido),
+
+    CONSTRAINT FK_DetallePedido_Pizza
+        FOREIGN KEY (idPizza)
+        REFERENCES Pizza(idPizza)
 );
