@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Data.Common;
+using Dapper;
 using Microsoft.Extensions.Configuration;
 using Pizzeria.Dominio.Entidades;
 using Pizzeria.Dominio.Interfaces;
@@ -27,5 +28,16 @@ public class PizzaRepository : RepoBase, IPizzaRepository
         using var db = Connection;
 
         return await db.QueryFirstOrDefaultAsync<Pizza>(sql, new { Id = id });
+    }
+
+    public async Task<int> CrearPizzaAsync(Pizza pisha)
+    {
+        const string sql =@"insert into Pizza (nombre, descripcion, precio, disponible) 
+        VALUES(@Nombre, @Descripcion, @Precio, @Disponible);
+        SELECT LAST_INSERT_ID();";
+
+        using var db = Connection;
+
+        return await db.ExecuteScalarAsync<int>(sql, pisha);
     }
 }
