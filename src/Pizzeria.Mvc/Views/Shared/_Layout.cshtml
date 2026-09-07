@@ -17,18 +17,15 @@
     <nav class="navbar navbar-dark bg-danger sticky-top">
         <div class="container-fluid px-4">
 
+            @*
             <a class="navbar-brand fw-bold"
                asp-controller="Landing"
                asp-action="Landing">
                 🍕 Pizzería
             </a>
+            *@
 
             <div class="d-flex gap-2">
-
-                <a class="btn btn-danger text-white"
-                   href="/#menu">
-                    Menú
-                </a>
 
                 <a class="btn btn-danger text-white"
                    href="/#contacto">
@@ -36,13 +33,18 @@
                 </a>
 
                 <a class="btn btn-danger text-white"
-                   href="#">
-                    Pedidos
+                   href="#menu">
+                    Menú
                 </a>
 
                 <a class="btn btn-warning"
-                   href="/#menu">
-                    Pedir ahora
+                   href="/#">
+                    Registrarse
+                </a>
+
+                <a class="btn btn-warning"
+                   href="/#">
+                    Iniciar sesion
                 </a>
 
             </div>
