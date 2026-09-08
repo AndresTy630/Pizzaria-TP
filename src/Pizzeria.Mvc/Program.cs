@@ -1,5 +1,5 @@
 using Pizzeria.Dominio.Interfaces;
-using Pizzeria.Persistencia.Repos;
+using Pizzeria.Persistencia.Repositorios;
 using Pizzeria.Servicios.Interface;
 using Pizzeria.Servicios.Service;
 

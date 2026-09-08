@@ -1,6 +1,6 @@
 using Pizzeria.API.Endpoints;
 using Pizzeria.Dominio.Interfaces;
-using Pizzeria.Persistencia.Repos;
+using Pizzeria.Persistencia.Repositorios;
 using Pizzeria.Servicios.Interface;
 using Pizzeria.Servicios.Service;
 
@@ -16,9 +16,8 @@ builder.Services.AddScoped<IPizzaRepository, PizzaRepository>();
 
 // Capa de Negocio (Servicios)
 builder.Services.AddScoped<IPedidoService, PedidoService>();
-builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IPizzaService, PizzaService>();
-
 
 var app = builder.Build();
 

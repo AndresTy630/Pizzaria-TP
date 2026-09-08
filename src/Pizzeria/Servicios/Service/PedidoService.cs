@@ -25,25 +25,42 @@ public class PedidoService : IPedidoService
 
     public async Task<int> CrearPedidoAsync(Pedido pedido)
     {
-        pedido.CalcularTotal();
+        if (pedido.IdUsuario <= 0)
+            throw new ArgumentException("El usuario del pedido es obligatorio.");
+
+        if (pedido.IdSucursal <= 0)
+            throw new ArgumentException("La sucursal del pedido es obligatoria.");
 
         if (pedido.Detalles == null || !pedido.Detalles.Any())
             throw new ArgumentException("El pedido debe contener al menos una pizza.");
 
+        foreach (var detalle in pedido.Detalles)
+        {
+            if (detalle.Cantidad <= 0)
+                throw new ArgumentException("La cantidad de pizzas debe ser mayor a cero.");
+        }
+
+        if (pedido.TipoEntrega == TipoEntrega.Delivery && string.IsNullOrWhiteSpace(pedido.DireccionEntrega))
+        {
+            throw new ArgumentException("La dirección de entrega es obligatoria para pedidos con delivery.");
+        }
+
+        pedido.CalcularTotal();
+
         if (pedido.Total <= 0)
-            throw new ArgumentException("El total del pedido no puede ser cero o negativo.");
+            throw new ArgumentException("El total del pedido debe ser mayor a cero.");
 
         var idGenerado = await _pedidoRepository.CrearPedidoAsync(pedido);
 
-        _logger.LogInformation($"[NUEVO] Pedido {idGenerado} registrado con éxito.");
+        _logger.LogInformation(
+            $"[NUEVO] Pedido {idGenerado} registrado con éxito.");
 
-        _ = Task.Run(async () => await CicloEstadosPedidoAsync(idGenerado));
+        _ = Task.Run(async () => await CicloEstadosPedidoAsync(idGenerado, pedido.TipoEntrega));
 
         return idGenerado;
     }
 
-    public async Task<Pedido?> ObtenerPedidoAsync(int id)
-            => await _pedidoRepository.ObtenerPorIdAsync(id);
+    public async Task<Pedido?> ObtenerPedidoAsync(int id) => await _pedidoRepository.ObtenerPorIdAsync(id);
 
     public async Task CambiarEstadoPedidoAsync(int idPedido, EstadoPedido nuevoEstado)
     {
@@ -55,36 +72,37 @@ public class PedidoService : IPedidoService
         await _pedidoRepository.ActualizarEstadoAsync(idPedido, nuevoEstado);
     }
 
-    private async Task CicloEstadosPedidoAsync(int idPedido)
+    private async Task CicloEstadosPedidoAsync(int idPedido, TipoEntrega tipoEntrega)
     {
-        // Al estar en un hilo separado, necesitamos crear un "Scope" manual 
-        // para obtener una instancia nueva y segura del repositorio.
         using var scope = _scopeFactory.CreateScope();
 
         var repo = scope.ServiceProvider.GetRequiredService<IPedidoRepository>();
 
         try
         {
-            // COCINA: Tomando el pedido
-            await Task.Delay(5000); 
+            await Task.Delay(5000);
 
             await repo.ActualizarEstadoAsync(idPedido, EstadoPedido.EnPreparacion);
             _logger.LogInformation($"[SIMULACIÓN] Pedido {idPedido} EN PREPARACIÓN.");
 
-            // HORNO: Cocinando
             await Task.Delay(10000);
 
             await repo.ActualizarEstadoAsync(idPedido, EstadoPedido.Listo);
-            _logger.LogInformation($"[SIMULACIÓN] Pedido {idPedido} LISTO para retirar.");
+            _logger.LogInformation($"[SIMULACIÓN] Pedido {idPedido} LISTO.");
 
-            // REPARTO: En camino
-            await Task.Delay(5000);
+            if (tipoEntrega == TipoEntrega.Delivery)
+            {
+                await Task.Delay(5000);
 
-            await repo.ActualizarEstadoAsync(idPedido, EstadoPedido.EnViaje);
-            _logger.LogInformation($"[SIMULACIÓN] Pedido {idPedido} EN VIAJE.");
+                await repo.ActualizarEstadoAsync(idPedido, EstadoPedido.EnViaje);
+                _logger.LogInformation($"[SIMULACIÓN] Pedido {idPedido} EN VIAJE.");
 
-            // ENTREGA: Finalizado
-            await Task.Delay(12000);
+                await Task.Delay(12000);
+            }
+            else
+            {
+                await Task.Delay(5000);
+            }
 
             await repo.ActualizarEstadoAsync(idPedido, EstadoPedido.Entregado);
             _logger.LogInformation($"[SIMULACIÓN] Pedido {idPedido} ENTREGADO.");

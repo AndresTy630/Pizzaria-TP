@@ -11,13 +11,14 @@ public class PizzaRepository : RepoBase, IPizzaRepository
     {
     }
 
-    public async Task<IEnumerable<Pizza>> ObtenerTodasAsync()
+    public async Task<IEnumerable<Pizza>> ObtenerDisponiblesAsync()
     {
         using var connection = Connection;
 
         const string sql = @"
             SELECT *
-            FROM Pizza;";
+            FROM Pizza
+            WHERE disponible = TRUE;";
 
         return await connection.QueryAsync<Pizza>(sql);
     }
@@ -31,13 +32,10 @@ public class PizzaRepository : RepoBase, IPizzaRepository
             FROM Pizza
             WHERE idPizza = @Id;";
 
-        return await connection.QueryFirstOrDefaultAsync<Pizza>(
-            sql,
-            new { Id = id }
-        );
+        return await connection.QueryFirstOrDefaultAsync<Pizza>( sql, new { Id = id });
     }
 
-    public async Task<int> CrearAsync(Pizza pizza)
+    public async Task<int> CrearPizzaAsync(Pizza pisha)
     {
         using var connection = Connection;
 
@@ -48,9 +46,6 @@ public class PizzaRepository : RepoBase, IPizzaRepository
             (@Nombre, @Descripcion, @Precio, @Disponible);
             SELECT LAST_INSERT_ID();";
 
-        return await connection.ExecuteScalarAsync<int>(
-            sql,
-            pizza
-        );
+        return await connection.ExecuteScalarAsync<int>( sql, pisha );
     }
 }

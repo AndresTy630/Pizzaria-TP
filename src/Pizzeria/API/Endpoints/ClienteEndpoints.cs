@@ -5,6 +5,7 @@ using Pizzeria.Dominio.Entidades;
 using Pizzeria.Servicios.Interface;
 
 namespace Pizzeria.API.Endpoints;
+
 public static class ClienteEndpoints
 {
     public static void MapClienteEndpoints(this IEndpointRouteBuilder app)
@@ -16,7 +17,8 @@ public static class ClienteEndpoints
             try
             {
                 var id = await clienteService.RegistrarUsuarioAsync(cliente);
-                return Results.Created($"/api/clientes/{id}", new { IdCliente = id, Mensaje = "Cliente registrado." });
+
+                return Results.Created( $"/api/clientes/{id}", new { IdUsuario = id, Mensaje = "Cliente registrado." });
             }
             catch (ArgumentException ex)
             {
@@ -27,6 +29,7 @@ public static class ClienteEndpoints
         grupo.MapGet("/{id}", async (int id, IUsuarioService clienteService) =>
         {
             var cliente = await clienteService.ObtenerUsuarioAsync(id);
+
             return cliente is not null ? Results.Ok(cliente) : Results.NotFound("Cliente no encontrado.");
         });
     }

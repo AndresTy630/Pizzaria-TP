@@ -7,14 +7,13 @@ namespace Pizzeria.Persistencia.Repositorios;
 
 public class UsuarioRepository : RepoBase, IUsuarioRepository
 {
-    public UsuarioRepository(IConfiguration configuration)
-        : base(configuration)
+    public UsuarioRepository(IConfiguration configuration) : base(configuration)
     {
     }
 
-    public async Task<int> CrearAsync(Usuario usuario)
+    public async Task<int> CrearUsuarioAsync(Usuario usuario)
     {
-        using var bd = Connection;
+        using var db = Connection;
 
         const string sql = @"
             INSERT INTO Usuario(nombre, apellido, email, passwordHash, telefono, direccion)
@@ -22,15 +21,12 @@ public class UsuarioRepository : RepoBase, IUsuarioRepository
             (@Nombre, @Apellido, @Email, @PasswordHash, @Telefono, @Direccion);
             SELECT LAST_INSERT_ID();";
 
-        return await bd.ExecuteScalarAsync<int>(
-            sql,
-            usuario
-        );
+        return await db.ExecuteScalarAsync<int>(sql, usuario);
     }
 
     public async Task<Usuario?> ObtenerPorIdAsync(int id)
     {
-        using var bd = Connection;
+        using var db = Connection;
 
         const string sql = @"
             SELECT
@@ -44,9 +40,6 @@ public class UsuarioRepository : RepoBase, IUsuarioRepository
             FROM Usuario
             WHERE idUsuario = @Id;";
 
-        return await bd.QueryFirstOrDefaultAsync<Usuario>(
-            sql,
-            new { Id = id }
-        );
+        return await db.QueryFirstOrDefaultAsync<Usuario>(sql, new { Id = id });
     }
 }

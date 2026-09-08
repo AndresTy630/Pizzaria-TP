@@ -28,10 +28,9 @@ public class PizzaService : IPizzaService
         if (string.IsNullOrWhiteSpace(pisha.Nombre))
             throw new ArgumentException("El nombre de la pizza es obligatorio.");
 
-        if(pisha.Precio <= 0)
-            throw new Exception("El precio no debe ser mayor a cero");
+        if (pisha.Precio <= 0)
+            throw new ArgumentException("El precio debe ser mayor a cero.");
 
         return await _pizzaRepository.CrearPizzaAsync(pisha);
     }
-    
 }

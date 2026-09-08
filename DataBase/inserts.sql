@@ -1,4 +1,4 @@
-USE bd_Pizzeria;
+USE 5to_Pizzeria;
 
 
 -- ==========================================
@@ -102,7 +102,7 @@ INSERT INTO Pedido
 (idUsuario, idSucursal, idRepartidor, fechaHora,
  estado, tipoEntrega, direccionEntrega, total)
 VALUES
-(1, 1, 4, NOW(), 5, 2, 'CABA', 25500.00);
+(1, 1, 4, NOW(), 4, 2, 'CABA', 25500.00);
 
 
 -- Detalle del Pedido 1
