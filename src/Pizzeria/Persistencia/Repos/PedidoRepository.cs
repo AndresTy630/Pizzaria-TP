@@ -1,83 +1,120 @@
 ﻿using Dapper;
-using Pizzeria.Dominio.Entidades;
 using Microsoft.Extensions.Configuration;
+using Pizzeria.Dominio.Entidades;
 using Pizzeria.Dominio.Enums;
 using Pizzeria.Dominio.Interfaces;
 
-namespace Pizzeria.Persistencia.Repos
-{
-    public class PedidoRepository : RepoBase, IPedidoRepository
-    {
-        public PedidoRepository(IConfiguration configuration) : base(configuration)
-        {
-        }
+namespace Pizzeria.Persistencia.Repositorios;
 
-        public async Task<int> CrearPedidoAsync(Pedido pedido)
+public class PedidoRepository : RepoBase, IPedidoRepository
+{
+    public PedidoRepository(IConfiguration configuration) : base(configuration)
+    {
+    }
+
+    public async Task<int> CrearPedidoAsync(Pedido pedido)
+    {
+        using var connection = Connection;
+
+        connection.Open();
+
+        using var transaction = connection.BeginTransaction();
+
+        try
         {
             const string sqlPedido = @"
-                INSERT INTO Pedido (idCliente, fechaHora, estado, direccionEntrega, total) 
-                VALUES (@IdCliente, @FechaHora, @Estado, @DireccionEntrega, @Total);
+                INSERT INTO Pedido
+                (idUsuario, idSucursal, idRepartidor, fechaHora, estado, tipoEntrega, direccionEntrega, total)
+                VALUES
+                (@IdUsuario, @IdSucursal, @IdRepartidor, @FechaHora, @Estado, @TipoEntrega, @DireccionEntrega, @Total);
                 SELECT LAST_INSERT_ID();";
 
+            var idPedido = await connection.ExecuteScalarAsync<int>(
+                sqlPedido,
+                new
+                {
+                    pedido.IdUsuario,
+                    pedido.IdSucursal,
+                    pedido.IdRepartidor,
+                    pedido.FechaHora,
+                    Estado = (int)pedido.Estado,
+                    TipoEntrega = (int)pedido.TipoEntrega,
+                    pedido.DireccionEntrega,
+                    pedido.Total
+                },
+                transaction
+            );
+
             const string sqlDetalle = @"
-                INSERT INTO DetallePedido (idPedido, idPizza, cantidad, precioUnitario) 
-                VALUES (@IdPedido, @IdPizza, @Cantidad, @PrecioUnitario);";
+                INSERT INTO DetallePedido
+                (idPedido, idPizza, cantidad, precioUnitario)
+                VALUES
+                (@IdPedido, @IdPizza, @Cantidad, @PrecioUnitario);";
 
-            using var db = Connection;
-
-            await db.OpenAsync();
-            using var transaction = await db.BeginTransactionAsync();
-
-            try
+            foreach (var detalle in pedido.Detalles)
             {
-                var idGenerado = await db.ExecuteScalarAsync<int>(sqlPedido, pedido, transaction);
-
-                foreach (var detalle in pedido.Detalles)
-                {
-                    detalle.IdPedido = idGenerado;
-                }
-
-                await db.ExecuteAsync(sqlDetalle, pedido.Detalles, transaction);
-
-                await transaction.CommitAsync();
-                return idGenerado;
+                await connection.ExecuteAsync(
+                    sqlDetalle,
+                    new
+                    {
+                        IdPedido = idPedido,
+                        detalle.IdPizza,
+                        detalle.Cantidad,
+                        detalle.PrecioUnitario
+                    },
+                    transaction
+                );
             }
-            catch (Exception)
-            {
-                await transaction.RollbackAsync();
-                throw;
-            }
+
+            transaction.Commit();
+
+            return idPedido;
         }
-
-        public async Task<Pedido?> ObtenerPorIdAsync(int id)
+        catch
         {
-            const string sql = "SELECT * FROM Pedido WHERE idPedido = @Id;";
-
-            const string sqlDetalles = "SELECT * FROM DetallePedido WHERE idPedido = @Id;";
-
-            using var db = Connection;
-
-            var pedido = await db.QueryFirstOrDefaultAsync<Pedido>(sql, new { Id = id });
-
-            if (pedido != null)
-            {
-                var detalles = await db.QueryAsync<DetallePedido>(sqlDetalles, new { Id = id });
-
-                foreach (var detalle in detalles)
-                {
-                    pedido.AgregarDetalle(detalle);
-                }
-            }
-
-            return pedido;
+            transaction.Rollback();
+            throw;
         }
+    }
 
-        public async Task ActualizarEstadoAsync(int idPedido, EstadoPedido nuevoEstado)
+    public async Task<Pedido?> ObtenerPorIdAsync(int id)
+    {
+        using var connection = Connection;
+
+        const string sqlPedido = @"
+            SELECT *
+            FROM Pedido
+            WHERE idPedido = @Id;";
+
+        var pedido = await connection.QueryFirstOrDefaultAsync<Pedido>( sqlPedido, new { Id = id } );
+
+        if (pedido == null)
+            return null;
+
+        const string sqlDetalles = @"
+            SELECT *
+            FROM DetallePedido
+            WHERE idPedido = @IdPedido;";
+
+        var detalles = await connection.QueryAsync<DetallePedido>( sqlDetalles, new { IdPedido = id } );
+
+        foreach (var detalle in detalles)
         {
-            const string sql = "UPDATE Pedido SET estado = @Estado WHERE idPedido = @Id;";
-
-            using var db = Connection;
-            await db.ExecuteAsync(sql, new { Estado = (int)nuevoEstado, Id = idPedido });
+            pedido.AgregarDetalle(detalle);
         }
+
+        return pedido;
+    }
+
+    public async Task ActualizarEstadoAsync( int idPedido, EstadoPedido nuevoEstado)
+    {
+        using var connection = Connection;
+
+        const string sql = @"
+            UPDATE Pedido
+            SET estado = @Estado
+            WHERE idPedido = @IdPedido;";
+
+        await connection.ExecuteAsync( sql, new { IdPedido = idPedido, Estado = (int)nuevoEstado} );
     }
 }

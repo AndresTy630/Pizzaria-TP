@@ -3,32 +3,50 @@ using Microsoft.Extensions.Configuration;
 using Pizzeria.Dominio.Entidades;
 using Pizzeria.Dominio.Interfaces;
 
-namespace Pizzeria.Persistencia.Repos;
+namespace Pizzeria.Persistencia.Repositorios;
 
 public class UsuarioRepository : RepoBase, IUsuarioRepository
 {
-    public UsuarioRepository(IConfiguration configuration) : base(configuration)
+    public UsuarioRepository(IConfiguration configuration)
+        : base(configuration)
     {
     }
 
-    public async Task<int> CrearUsuarioAsync(Usuario user)
+    public async Task<int> CrearAsync(Usuario usuario)
     {
+        using var bd = Connection;
+
         const string sql = @"
-                INSERT INTO Usuario (nombre, apellido, userName, clave, telefono, direccion, rol) 
-                VALUES (@Nombre, @Apellido, @UserName, @Clave, @Telefono, @Direccion, @Rol);
-                SELECT LAST_INSERT_ID();";
+            INSERT INTO Usuario(nombre, apellido, email, passwordHash, telefono, direccion)
+            VALUES
+            (@Nombre, @Apellido, @Email, @PasswordHash, @Telefono, @Direccion);
+            SELECT LAST_INSERT_ID();";
 
-        using var db = Connection;
-
-        return await db.ExecuteScalarAsync<int>(sql, user);
+        return await bd.ExecuteScalarAsync<int>(
+            sql,
+            usuario
+        );
     }
 
     public async Task<Usuario?> ObtenerPorIdAsync(int id)
     {
-        const string sql = "SELECT * FROM Usuario WHERE idUsuario = @Id;";
+        using var bd = Connection;
 
-        using var db = Connection;
+        const string sql = @"
+            SELECT
+                idUsuario,
+                nombre,
+                apellido,
+                email,
+                passwordHash,
+                telefono,
+                direccion
+            FROM Usuario
+            WHERE idUsuario = @Id;";
 
-        return await db.QueryFirstOrDefaultAsync<Usuario>(sql, new { Id = id });
+        return await bd.QueryFirstOrDefaultAsync<Usuario>(
+            sql,
+            new { Id = id }
+        );
     }
 }

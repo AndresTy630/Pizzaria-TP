@@ -1,10 +1,9 @@
-﻿using System.Data.Common;
-using Dapper;
+﻿using Dapper;
 using Microsoft.Extensions.Configuration;
 using Pizzeria.Dominio.Entidades;
 using Pizzeria.Dominio.Interfaces;
 
-namespace Pizzeria.Persistencia.Repos;
+namespace Pizzeria.Persistencia.Repositorios;
 
 public class PizzaRepository : RepoBase, IPizzaRepository
 {
@@ -12,32 +11,46 @@ public class PizzaRepository : RepoBase, IPizzaRepository
     {
     }
 
-    public async Task<IEnumerable<Pizza>> ObtenerDisponiblesAsync()
+    public async Task<IEnumerable<Pizza>> ObtenerTodasAsync()
     {
-        const string sql = "SELECT * FROM Pizza WHERE disponible = 1;";
+        using var connection = Connection;
 
-        using var db = Connection;
+        const string sql = @"
+            SELECT *
+            FROM Pizza;";
 
-        return await db.QueryAsync<Pizza>(sql);
+        return await connection.QueryAsync<Pizza>(sql);
     }
 
     public async Task<Pizza?> ObtenerPorIdAsync(int id)
     {
-        const string sql = "SELECT * FROM Pizza WHERE idPizza = @Id;";
+        using var connection = Connection;
 
-        using var db = Connection;
+        const string sql = @"
+            SELECT *
+            FROM Pizza
+            WHERE idPizza = @Id;";
 
-        return await db.QueryFirstOrDefaultAsync<Pizza>(sql, new { Id = id });
+        return await connection.QueryFirstOrDefaultAsync<Pizza>(
+            sql,
+            new { Id = id }
+        );
     }
 
-    public async Task<int> CrearPizzaAsync(Pizza pisha)
+    public async Task<int> CrearAsync(Pizza pizza)
     {
-        const string sql =@"insert into Pizza (nombre, descripcion, precio, disponible) 
-        VALUES(@Nombre, @Descripcion, @Precio, @Disponible);
-        SELECT LAST_INSERT_ID();";
+        using var connection = Connection;
 
-        using var db = Connection;
+        const string sql = @"
+            INSERT INTO Pizza
+            (nombre, descripcion, precio, disponible)
+            VALUES
+            (@Nombre, @Descripcion, @Precio, @Disponible);
+            SELECT LAST_INSERT_ID();";
 
-        return await db.ExecuteScalarAsync<int>(sql, pisha);
+        return await connection.ExecuteScalarAsync<int>(
+            sql,
+            pizza
+        );
     }
 }
