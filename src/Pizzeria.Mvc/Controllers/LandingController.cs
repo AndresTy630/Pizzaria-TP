@@ -16,6 +16,6 @@ public class LandingController : Controller
     {
         var pizzas = await _pizzaService.VerDisponiblesAsync();
 
-        return View("~/Views/Pages/Landing/Landing.cshtml", pizzas);
+        return View(pizzas);
     }
 }
