@@ -18,31 +18,31 @@ VALUES
 -- ==========================================
 
 INSERT INTO Usuario
-(nombre, apellido, email, passwordHash, telefono, direccion)
+(usuario, nombre, apellido, email, passwordHash, telefono, direccion)
 VALUES
 
 -- CLIENTES
-('Andrés', 'Torrico', 'andres@gmail.com', 'HASH_CLIENTE_1', '1198765432', 'CABA'),
+('andres_torrico', 'Andrés', 'Torrico', 'andres@gmail.com', 'HASH_CLIENTE_1', '1198765432', 'CABA'),
 
-('Misael', 'Gómez', 'misael@gmail.com', 'HASH_CLIENTE_2', '1123456789', 'Av. Siempre Viva 742'),
+('misael_gomez', 'Misael', 'Gómez', 'misael@gmail.com', 'HASH_CLIENTE_2', '1123456789', 'Av. Siempre Viva 742'),
 
-('Lucía', 'Fernández', 'lucia@gmail.com', 'HASH_CLIENTE_3', '1167891234', 'Av. Santa Fe 1500'),
+('lucia_fernandez', 'Lucía', 'Fernández', 'lucia@gmail.com', 'HASH_CLIENTE_3', '1167891234', 'Av. Santa Fe 1500'),
 
 
 -- ADMINISTRADOR
-('Andrés', 'Torrico', 'admin@pizzeria.com', 'HASH_ADMIN', '1122334455', NULL),
+('admin', 'Andrés', 'Torrico', 'admin@pizzeria.com', 'HASH_ADMIN', '1122334455', NULL),
 
 
 -- CHEFS
-('Carlos', 'Pérez', 'carlos.chef@pizzeria.com', 'HASH_CHEF_1', '1155551111', NULL),
+('carlos_perez', 'Carlos', 'Pérez', 'carlos.chef@pizzeria.com', 'HASH_CHEF_1', '1155551111', NULL),
 
-('Sofía', 'Rodríguez', 'sofia.chef@pizzeria.com', 'HASH_CHEF_2', '1155552222', NULL),
+('sofia_rodriguez', 'Sofía', 'Rodríguez', 'sofia.chef@pizzeria.com', 'HASH_CHEF_2', '1155552222', NULL),
 
 
 -- REPARTIDORES
-('Juan', 'Martínez', 'juan.repartidor@pizzeria.com', 'HASH_REPARTIDOR_1', '1155553333', NULL),
+('juan_martinez', 'Juan', 'Martínez', 'juan.repartidor@pizzeria.com', 'HASH_REPARTIDOR_1', '1155553333', NULL),
 
-('Pedro', 'García', 'pedro.repartidor@pizzeria.com', 'HASH_REPARTIDOR_2', '1155554444', NULL);
+('pedro_garcia', 'Pedro', 'García', 'pedro.repartidor@pizzeria.com', 'HASH_REPARTIDOR_2', '1155554444', NULL);
 
 
 -- ==========================================

@@ -13,6 +13,9 @@ public class UsuarioService : IUsuarioService
 
     public async Task<int> RegistrarUsuarioAsync(Usuario user)
     {
+        if (string.IsNullOrWhiteSpace(user.Usuario))
+            throw new ArgumentException("El nombre de usuario es obligatorio.");
+
         if (string.IsNullOrWhiteSpace(user.Nombre))
             throw new ArgumentException("El nombre del cliente es obligatorio.");
 

@@ -23,6 +23,7 @@ CREATE TABLE Sucursal(
 
 CREATE TABLE Usuario(
     idUsuario INT NOT NULL AUTO_INCREMENT,
+    usuario VARCHAR(50) NOT NULL,
     nombre VARCHAR(100) NOT NULL,
     apellido VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL,

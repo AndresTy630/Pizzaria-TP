@@ -4,6 +4,8 @@ public class Usuario
 {
     public int IdUsuario { get; set; }
 
+    public string Usuario { get; set; } = string.Empty;
+
     public string Nombre { get; set; } = string.Empty;
 
     public string Apellido { get; set; } = string.Empty;
