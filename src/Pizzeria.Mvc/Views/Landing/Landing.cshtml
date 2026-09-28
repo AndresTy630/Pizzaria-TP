@@ -1,75 +1,50 @@
 ﻿@model IEnumerable<Pizzeria.Dominio.Entidades.Pizza>
 
 @{
-ViewData[index: "Title"] = "Pizzería";
+    ViewData["Title"] = "Inicio";
 }
 
 <!-- INICIO -->
-
 <section class="bg-warning-subtle text-center py-5">
-
-<div class="container py-4">
-
-    <img src="~/images/logo.png"
-         class="img-fluid mb-4"
-         width="400"
-         alt="Logo de la pizzería">
-
-    <h1 class="display-4 fw-bold">
-        La mejor pizza de la ciudad
-    </h1>
-
-    <p class="lead">
-        Pizzas caseras, ingredientes frescos y mucho sabor.
-    </p>
-
-    <a href="#menu" class="btn btn-danger btn-lg mt-3">
-        Ver menú
-    </a>
-
-</div>
-
+    <div class="container py-4">
+        <h1 class="display-4 fw-bold">La mejor pizza de la ciudad</h1>
+        <p class="lead">Pizzas caseras, ingredientes frescos y mucho sabor.</p>
+        <a href="#menu" class="btn btn-danger btn-lg mt-3">Ver menú</a>
+    </div>
 </section>
 
-<!-- MENU -->
-
+<!-- MENÚ -->
 <section id="menu" class="container my-5">
+    <h2 class="text-center fw-bold mb-5">Nuestras pizzas</h2>
 
-<h2 class="text-center fw-bold mb-5">
-    Nuestras pizzas
-</h2>
-
-<div class="row">
-
-    @foreach (var pizza in Model)
+    @if (!Model.Any())
     {
-        <div class="col-md-4 mb-4">
-
-            <div class="card text-center h-100 shadow-sm">
-
-                <div class="card-body p-4">
-
-                    <h3 class="card-title fw-bold">
-                        @pizza.Nombre
-                    </h3>
-
-                    <p class="card-text mt-3">
-                        @pizza.Descripcion
-                    </p>
-
-                    <h4 class="fw-bold text-danger mt-4">
-                        $@pizza.Precio.ToString("N2")
-                    </h4>
-
-                    <button class="btn btn-danger mt-3">
-                        Pedir
-                    </button>
-
-                </div>
-
-            </div>
-
-        </div>
+        <div class="alert alert-info text-center">Por ahora no hay pizzas disponibles.</div>
     }
 
-</div>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var pizza in Model)
+        {
+            <div class="col">
+                <div class="card h-100 text-center shadow-sm">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <h3 class="h5 fw-bold">@pizza.Nombre</h3>
+                        <p class="card-text">@pizza.Descripcion</p>
+                        <h4 class="fw-bold text-danger mt-auto">$@pizza.Precio.ToString("N2")</h4>
+                        <a asp-controller="Login" asp-action="Login" class="btn btn-danger mt-3">Pedir</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- CONTACTO -->
+<section id="contacto" class="bg-body-tertiary py-5">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Contacto</h2>
+        <p class="mb-1">📍 Av. Corrientes 1234, CABA</p>
+        <p class="mb-1">📞 011-4567-8901</p>
+        <p class="mb-0">✉️ contacto@pizzeria.com</p>
+    </div>
+</section>

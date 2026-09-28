@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Pizzeria.Mvc.Models;
 using Pizzeria.Servicios.Interface;
 
 namespace Pizzeria.Mvc.Controllers;
@@ -15,7 +17,11 @@ public class LandingController : Controller
     public async Task<IActionResult> Landing()
     {
         var pizzas = await _pizzaService.VerDisponiblesAsync();
-
         return View(pizzas);
+    }
+
+    public IActionResult Error()
+    {
+        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }

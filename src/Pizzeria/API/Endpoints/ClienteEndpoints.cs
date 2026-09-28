@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Pizzeria.Dominio.Entidades;
+﻿using Pizzeria.Dominio.Entidades;
 using Pizzeria.Servicios.Interface;
 
 namespace Pizzeria.API.Endpoints;
@@ -12,13 +9,12 @@ public static class ClienteEndpoints
     {
         var grupo = app.MapGroup("/api/clientes").WithTags("Gestión de Clientes");
 
-        grupo.MapPost("/", async (Usuario cliente, IUsuarioService clienteService) =>
+        grupo.MapPost("/", async (Usuario cliente, IUsuarioService service) =>
         {
             try
             {
-                var id = await clienteService.RegistrarUsuarioAsync(cliente);
-
-                return Results.Created( $"/api/clientes/{id}", new { IdUsuario = id, Mensaje = "Cliente registrado." });
+                var id = await service.RegistrarUsuarioAsync(cliente);
+                return Results.Created($"/api/clientes/{id}", new { IdUsuario = id, Mensaje = "Cliente registrado." });
             }
             catch (ArgumentException ex)
             {
@@ -26,11 +22,18 @@ public static class ClienteEndpoints
             }
         });
 
-        grupo.MapGet("/{id}", async (int id, IUsuarioService clienteService) =>
+        grupo.MapGet("/{id:int}", async (int id, IUsuarioService service) =>
         {
-            var cliente = await clienteService.ObtenerUsuarioAsync(id);
+            var u = await service.ObtenerUsuarioAsync(id);
 
-            return cliente is not null ? Results.Ok(cliente) : Results.NotFound("Cliente no encontrado.");
+            if (u is null)
+                return Results.NotFound("Cliente no encontrado.");
+
+            // Se devuelve sin el PasswordHash
+            return Results.Ok(new
+            {
+                u.IdUsuario, u.NombreUsuario, u.Nombre, u.Apellido, u.Email, u.Telefono, u.Direccion
+            });
         });
     }
 }

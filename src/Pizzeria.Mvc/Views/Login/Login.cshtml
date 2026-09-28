@@ -1,90 +1,35 @@
-@model Pizzeria.Mvc.Models.LoginViewModel
+@model LoginViewModel
 
 @{
+    Layout = "_AuthLayout";
     ViewData["Title"] = "Iniciar sesión";
 }
 
-<div class="container py-5">
-    <div class="row justify-content-center">
+<h2 class="text-center mb-4">Iniciar sesión</h2>
 
-        <div class="col-12 col-sm-10 col-md-6 col-lg-4">
+<form asp-action="Login" method="post">
 
-            <div class="card shadow border-0">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                <div class="card-body p-4">
-
-                    <h2 class="text-center mb-4">
-                        Iniciar sesión
-                    </h2>
-
-                    <form asp-action="Login"
-                          method="post">
-
-                        <div asp-validation-summary="ModelOnly"
-                             class="text-danger mb-3">
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label asp-for="Login"
-                                   class="form-label">
-                            </label>
-
-                            <input asp-for="Login"
-                                   class="form-control"
-                                   placeholder="Usuario o email"
-                                   autocomplete="username" />
-
-                            <span asp-validation-for="Login"
-                                  class="text-danger">
-                            </span>
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <label asp-for="Password"
-                                   class="form-label">
-                            </label>
-
-                            <input asp-for="Password"
-                                   class="form-control"
-                                   placeholder="Contraseña"
-                                   autocomplete="current-password" />
-
-                            <span asp-validation-for="Password"
-                                  class="text-danger">
-                            </span>
-
-                        </div>
-
-                        <button type="submit"
-                                class="btn btn-warning w-100">
-                            Iniciar sesión
-                        </button>
-
-                    </form>
-
-                    <div class="text-center mt-4">
-
-                        <span>
-                            ¿No tenés una cuenta?
-                        </span>
-
-                        <a href="/Registro/Registro">
-                            Registrate
-                        </a>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
+    <div class="form-floating mb-3">
+        <input asp-for="Login" class="form-control" placeholder="Usuario o email" autocomplete="username" />
+        <label asp-for="Login"></label>
+        <span asp-validation-for="Login" class="text-danger small"></span>
     </div>
-</div>
+
+    <div class="form-floating mb-3">
+        <input asp-for="Password" class="form-control" placeholder="Contraseña" autocomplete="current-password" />
+        <label asp-for="Password"></label>
+        <span asp-validation-for="Password" class="text-danger small"></span>
+    </div>
+
+    <button type="submit" class="btn btn-danger w-100 py-2">Ingresar</button>
+</form>
+
+<p class="text-center mt-4 mb-0">
+    ¿No tenés una cuenta?
+    <a asp-controller="Registro" asp-action="Registro">Registrate</a>
+</p>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

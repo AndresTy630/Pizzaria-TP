@@ -52,6 +52,6 @@ public class RegistroViewModel
     [Display(Name = "Teléfono")]
     public string Telefono { get; set; } = string.Empty;
 
-    [Display(Name = "Dirección")]
-    public string Direccion { get; set; } = string.Empty;
+    [Display(Name = "Dirección (opcional)")]
+    public string? Direccion { get; set; }
 }

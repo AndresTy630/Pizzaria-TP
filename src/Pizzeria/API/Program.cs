@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Identity;
 using Pizzeria.API.Endpoints;
+using Pizzeria.Dominio.Entidades;
 using Pizzeria.Dominio.Interfaces;
 using Pizzeria.Persistencia.Repositorios;
 using Pizzeria.Servicios.Interface;
@@ -9,15 +11,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Capa de Datos (Repositorios)
+// Repositorios
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPizzaRepository, PizzaRepository>();
 
-// Capa de Negocio (Servicios)
+// Servicios
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IPizzaService, PizzaService>();
+
+// Hash de contraseñas (faltaba)
+builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 
 var app = builder.Build();
 

@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Pizzeria.Dominio.Entidades;
 using Pizzeria.Dominio.Interfaces;
@@ -10,76 +9,30 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
-// =============================
-// REPOSITORIOS
-// =============================
-
+// Repositorios
 builder.Services.AddScoped<IPizzaRepository, PizzaRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 
-// =============================
-// SERVICIOS
-// =============================
-
+// Servicios
 builder.Services.AddScoped<IPizzaService, PizzaService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 
-// =============================
-// HASH DE CONTRASEÑAS
-// =============================
-
-builder.Services.AddScoped<
-    IPasswordHasher<Usuario>,
-    PasswordHasher<Usuario>
->();
-
-// =============================
-// AUTENTICACIÓN
-// =============================
-
-builder.Services
-    .AddAuthentication(
-        CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Login/Login";
-
-        options.AccessDeniedPath =
-            "/Login/AccesoDenegado";
-
-        options.ExpireTimeSpan =
-            TimeSpan.FromHours(8);
-
-        options.SlidingExpiration = true;
-    });
+// Hash de contraseñas
+builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 
 var app = builder.Build();
 
-// =============================
-// MIDDLEWARE
-// =============================
-
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Landing/Error");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseRouting();
-
-app.UseAuthentication();
-
-app.UseAuthorization();
-
-// =============================
-// RUTA PRINCIPAL
-// =============================
 
 app.MapControllerRoute(
     name: "default",
