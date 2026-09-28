@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
+using Pizzeria.Dominio.Entidades;
 using Pizzeria.Dominio.Interfaces;
 using Pizzeria.Persistencia.Repositorios;
 using Pizzeria.Servicios.Interface;
@@ -5,21 +8,59 @@ using Pizzeria.Servicios.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// MVC
 builder.Services.AddControllersWithViews();
 
-// Repositorios
+// =============================
+// REPOSITORIOS
+// =============================
+
 builder.Services.AddScoped<IPizzaRepository, PizzaRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 
-// Servicios
+// =============================
+// SERVICIOS
+// =============================
+
 builder.Services.AddScoped<IPizzaService, PizzaService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+
+// =============================
+// HASH DE CONTRASEÑAS
+// =============================
+
+builder.Services.AddScoped<
+    IPasswordHasher<Usuario>,
+    PasswordHasher<Usuario>
+>();
+
+// =============================
+// AUTENTICACIÓN
+// =============================
+
+builder.Services
+    .AddAuthentication(
+        CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Login/Login";
+
+        options.AccessDeniedPath =
+            "/Login/AccesoDenegado";
+
+        options.ExpireTimeSpan =
+            TimeSpan.FromHours(8);
+
+        options.SlidingExpiration = true;
+    });
 
 var app = builder.Build();
 
-// Configuración del entorno
+// =============================
+// MIDDLEWARE
+// =============================
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -27,13 +68,19 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
+
 app.UseAuthorization();
 
-// Ruta principal
+// =============================
+// RUTA PRINCIPAL
+// =============================
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Landing}/{action=Landing}/{id?}");

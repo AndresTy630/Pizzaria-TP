@@ -1,0 +1,91 @@
+@model Pizzeria.Mvc.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Iniciar sesión";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+
+        <div class="col-12 col-sm-10 col-md-6 col-lg-4">
+
+            <div class="card shadow border-0">
+
+                <div class="card-body p-4">
+
+                    <h2 class="text-center mb-4">
+                        Iniciar sesión
+                    </h2>
+
+                    <form asp-action="Login"
+                          method="post">
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label asp-for="Login"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="Login"
+                                   class="form-control"
+                                   placeholder="Usuario o email"
+                                   autocomplete="username" />
+
+                            <span asp-validation-for="Login"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label asp-for="Password"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="Password"
+                                   class="form-control"
+                                   placeholder="Contraseña"
+                                   autocomplete="current-password" />
+
+                            <span asp-validation-for="Password"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-warning w-100">
+                            Iniciar sesión
+                        </button>
+
+                    </form>
+
+                    <div class="text-center mt-4">
+
+                        <span>
+                            ¿No tenés una cuenta?
+                        </span>
+
+                        <a href="/Registro/Registro">
+                            Registrate
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
