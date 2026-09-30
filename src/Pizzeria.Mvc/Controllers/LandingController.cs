@@ -16,8 +16,18 @@ public class LandingController : Controller
 
     public async Task<IActionResult> Landing()
     {
+    
         var pizzas = await _pizzaService.VerDisponiblesAsync();
-        return View(pizzas);
+
+        var model = pizzas.Select(pizza => new PizzaViewModel
+        {
+            IdPizza = pizza.IdPizza,
+            Nombre = pizza.Nombre,
+            Descripcion = pizza.Descripcion,
+            Precio = pizza.Precio
+        });
+
+        return View(model);
     }
 
     public IActionResult Error()
