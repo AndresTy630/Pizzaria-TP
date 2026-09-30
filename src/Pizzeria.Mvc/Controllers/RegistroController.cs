@@ -15,19 +15,11 @@ public class RegistroController : Controller
         _usuarioService = usuarioService;
     }
 
-    // =============================
-    // GET: /Registro/Registro
-    // =============================
-
     [HttpGet]
     public IActionResult Registro()
     {
         return View();
     }
-
-    // =============================
-    // POST: /Registro/Registro
-    // =============================
 
     [HttpPost]
     [ValidateAntiForgeryToken]
