@@ -14,7 +14,7 @@ public class LandingController : Controller
         _pizzaService = pizzaService;
     }
 
-    public async Task<IActionResult> Landing()
+    public async Task<IActionResult> Index()
     {
     
         var pizzas = await _pizzaService.VerDisponiblesAsync();

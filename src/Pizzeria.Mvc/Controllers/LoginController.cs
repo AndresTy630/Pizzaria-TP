@@ -14,7 +14,7 @@ public class LoginController : Controller
     }
 
     [HttpGet]
-    public IActionResult Login()
+    public IActionResult Index()
     {
         return View();
     }

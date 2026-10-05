@@ -23,7 +23,7 @@ public class RegistroController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Registro(
+    public async Task<IActionResult> Index(
         RegistroViewModel model)
     {
         if (!ModelState.IsValid)
