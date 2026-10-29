@@ -11,25 +11,29 @@
     <div class="row g-0 min-vh-100">
 
         <aside class="col-md-3 col-lg-2 bg-dark text-white p-3">
-            <a asp-controller="Landing" asp-action="Landing"
+            <a asp-controller="Home" asp-action="Index"
                class="h5 text-white text-decoration-none">🍕 Massa Club</a>
 
             <ul class="nav flex-column mt-4">
                 <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="Dashboard" asp-action="Dashboard">Inicio</a>
+                    <a class="nav-link text-white" asp-controller="Dashboard" asp-action="Index">Inicio</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="Landing" asp-action="Landing">Sitio web</a>
+                    <a class="nav-link text-white" asp-controller="Home" asp-action="Index">Sitio web</a>
                 </li>
             </ul>
 
             <hr />
 
-            <a asp-controller="Landing" asp-action="Landing"
+            <a asp-controller="Account" asp-action="Login"
                class="btn btn-outline-light btn-sm w-100">Cerrar sesión</a>
         </aside>
 
         <main class="col-md-9 col-lg-10 p-4">
+            @if (TempData["Exito"] is string exito)
+            {
+                <div class="alert alert-success">@exito</div>
+            }
             @RenderBody()
         </main>
 
