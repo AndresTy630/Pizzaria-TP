@@ -1,0 +1,28 @@
+@model IEnumerable<PizzaViewModel>
+
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Pizzas";
+}
+
+<h2 class="fw-bold mb-4">Nuestras pizzas</h2>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Por ahora no hay pizzas disponibles.</div>
+}
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
+    @foreach (var pizza in Model)
+    {
+        <div class="col">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body d-flex flex-column">
+                    <h3 class="h5 fw-bold">@pizza.Nombre</h3>
+                    <p class="card-text text-muted">@pizza.Descripcion</p>
+                    <h4 class="fw-bold text-danger mt-auto mb-0">$@pizza.Precio.ToString("N2")</h4>
+                </div>
+            </div>
+        </div>
+    }
+</div>
