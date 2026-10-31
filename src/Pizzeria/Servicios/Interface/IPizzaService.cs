@@ -8,4 +8,6 @@ public interface IPizzaService
     Task<Pizza?> ObtenerPizzaAsync(int id);
     Task<int> RegistrarPizzaAsync(Pizza pisha);
     Task<IEnumerable<Pizza>> VerTodasAsync();
+    Task ActualizarPizzaAsync(int id, string nombre, string descripcion, decimal precio);
+    Task CambiarDisponibilidadAsync(int id);
 }

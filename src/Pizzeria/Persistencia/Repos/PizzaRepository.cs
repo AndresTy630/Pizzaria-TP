@@ -23,6 +23,17 @@ public class PizzaRepository : RepoBase, IPizzaRepository
         return await connection.QueryAsync<Pizza>(sql);
     }
 
+    public async Task<IEnumerable<Pizza>> ObtenerTodasAsync()
+    {
+        using var connection = Connection;
+
+        const string sql = @"
+            SELECT *
+            FROM Pizza;";
+
+        return await connection.QueryAsync<Pizza>(sql);
+    }
+
     public async Task<Pizza?> ObtenerPorIdAsync(int id)
     {
         using var connection = Connection;
@@ -32,7 +43,7 @@ public class PizzaRepository : RepoBase, IPizzaRepository
             FROM Pizza
             WHERE idPizza = @Id;";
 
-        return await connection.QueryFirstOrDefaultAsync<Pizza>( sql, new { Id = id });
+        return await connection.QueryFirstOrDefaultAsync<Pizza>(sql, new { Id = id });
     }
 
     public async Task<int> CrearPizzaAsync(Pizza pisha)
@@ -46,17 +57,21 @@ public class PizzaRepository : RepoBase, IPizzaRepository
             (@Nombre, @Descripcion, @Precio, @Disponible);
             SELECT LAST_INSERT_ID();";
 
-        return await connection.ExecuteScalarAsync<int>( sql, pisha );
+        return await connection.ExecuteScalarAsync<int>(sql, pisha);
     }
 
-    public async Task<IEnumerable<Pizza>> ObtenerTodasAsync()
+    public async Task ActualizarAsync(Pizza pizza)
     {
         using var connection = Connection;
 
         const string sql = @"
-            SELECT *
-            FROM Pizza;";
+            UPDATE Pizza
+            SET nombre = @Nombre,
+                descripcion = @Descripcion,
+                precio = @Precio,
+                disponible = @Disponible
+            WHERE idPizza = @IdPizza;";
 
-        return await connection.QueryAsync<Pizza>(sql);
+        await connection.ExecuteAsync(sql, pizza);
     }
 }

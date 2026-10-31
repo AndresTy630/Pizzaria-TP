@@ -8,5 +8,6 @@ namespace Pizzeria.Dominio.Interfaces
         Task<Pizza?> ObtenerPorIdAsync(int id);
         Task<int> CrearPizzaAsync(Pizza pisha);
         Task<IEnumerable<Pizza>> ObtenerTodasAsync();
+        Task ActualizarAsync(Pizza pizza);
     }
 }

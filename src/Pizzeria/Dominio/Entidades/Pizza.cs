@@ -25,6 +25,15 @@ public class Pizza
         Precio = nuevoPrecio;
     }
 
+    public void ActualizarDatos(string nombre, string descripcion)
+    {
+        if (string.IsNullOrWhiteSpace(nombre))
+            throw new ArgumentException("El nombre es obligatorio.");
+
+        Nombre = nombre.Trim();
+        Descripcion = descripcion?.Trim() ?? string.Empty;
+    }
+
     public void MarcarComoAgotada() => Disponible = false;
 
     public void MarcarComoDisponible() => Disponible = true;

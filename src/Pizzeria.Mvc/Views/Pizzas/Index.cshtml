@@ -1,26 +1,79 @@
-@model IEnumerable<PizzaViewModel>
+@model MenuViewModel
 
 @{
     Layout = "_DashboardLayout";
-    ViewData["Title"] = "Pizzas";
+    ViewData["Title"] = "Menú";
 }
 
-<h2 class="fw-bold mb-4">Nuestras pizzas</h2>
+<h2 class="fw-bold mb-4">Nuestro menú</h2>
 
-@if (!Model.Any())
+<!-- BUSCADOR Y FILTROS -->
+<form method="get" class="row g-2 align-items-center mb-4">
+    <div class="col-12 col-md-5">
+        <input type="search" name="buscar" value="@Model.Buscar"
+               class="form-control" placeholder="Buscar pizza por nombre..." />
+    </div>
+
+    <div class="col-6 col-md-3">
+        <select name="orden" class="form-select" onchange="this.form.submit()">
+            <option value="nombre" selected="@(Model.Orden == "nombre")">Orden alfabético</option>
+            <option value="precio_asc" selected="@(Model.Orden == "precio_asc")">Más barata primero</option>
+            <option value="precio_desc" selected="@(Model.Orden == "precio_desc")">Más cara primero</option>
+        </select>
+    </div>
+
+    <div class="col-6 col-md-2">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="soloOfertas" value="true"
+                   id="soloOfertas" checked="@Model.SoloOfertas" onchange="this.form.submit()" />
+            <label class="form-check-label" for="soloOfertas">Solo ofertas</label>
+        </div>
+    </div>
+
+    <div class="col-12 col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-danger flex-fill">Buscar</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Limpiar</a>
+    </div>
+</form>
+
+@if (!Model.Pizzas.Any())
 {
-    <div class="alert alert-info">Por ahora no hay pizzas disponibles.</div>
+    <div class="alert alert-info">No se encontraron pizzas con esos filtros.</div>
 }
 
 <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
-    @foreach (var pizza in Model)
+    @foreach (var pizza in Model.Pizzas)
     {
         <div class="col">
-            <div class="card h-100 shadow-sm border-0">
+            <div class="card h-100 shadow-sm border-0 position-relative @(pizza.TieneOferta ? "border border-danger" : "")">
+
+                @if (pizza.TieneOferta)
+                {
+                    <span class="badge text-bg-danger position-absolute top-0 end-0 m-2 fs-6">
+                        🔥 @pizza.OfertaTexto
+                    </span>
+                }
+
                 <div class="card-body d-flex flex-column">
-                    <h3 class="h5 fw-bold">@pizza.Nombre</h3>
+                    <h3 class="h5 fw-bold pe-5">@pizza.Nombre</h3>
                     <p class="card-text text-muted">@pizza.Descripcion</p>
-                    <h4 class="fw-bold text-danger mt-auto mb-0">$@pizza.Precio.ToString("N2")</h4>
+
+                    <div class="mt-auto">
+                        @if (pizza.TieneDescuento)
+                        {
+                            <div class="text-muted"><del>$@pizza.Precio.ToString("N2")</del></div>
+                            <div class="display-6 fw-bold text-danger">$@pizza.PrecioFinal.ToString("N2")</div>
+                        }
+                        else
+                        {
+                            <div class="display-6 fw-bold">$@pizza.Precio.ToString("N2")</div>
+                        }
+
+                        @if (pizza.OfertaHasta is not null)
+                        {
+                            <div class="small text-muted mt-1">Oferta hasta el @pizza.OfertaHasta.Value.ToString("dd/MM")</div>
+                        }
+                    </div>
                 </div>
             </div>
         </div>

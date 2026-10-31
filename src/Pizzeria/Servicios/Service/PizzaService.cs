@@ -38,4 +38,26 @@ public class PizzaService : IPizzaService
     {
         return await _pizzaRepository.ObtenerTodasAsync();
     }
+
+    public async Task ActualizarPizzaAsync(int id, string nombre, string descripcion, decimal precio)
+    {
+        var pizza = await _pizzaRepository.ObtenerPorIdAsync(id)
+            ?? throw new KeyNotFoundException("La pizza no existe.");
+
+        pizza.ActualizarDatos(nombre, descripcion);
+        pizza.ActualizarPrecio(precio);
+
+        await _pizzaRepository.ActualizarAsync(pizza);
+    }
+
+    public async Task CambiarDisponibilidadAsync(int id)
+    {
+        var pizza = await _pizzaRepository.ObtenerPorIdAsync(id)
+            ?? throw new KeyNotFoundException("La pizza no existe.");
+
+        if (pizza.Disponible) pizza.MarcarComoAgotada();
+        else pizza.MarcarComoDisponible();
+
+        await _pizzaRepository.ActualizarAsync(pizza);
+    }
 }
