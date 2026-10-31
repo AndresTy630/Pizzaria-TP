@@ -1,0 +1,77 @@
+@model List<PedidoResumenViewModel>
+@using Pizzeria.Dominio.Enums
+
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Mis pedidos";
+    var enCurso = Model.Where(p => p.EnCurso).ToList();
+    var anteriores = Model.Where(p => !p.EnCurso).ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">Mis pedidos</h2>
+    <a asp-action="Crear" class="btn btn-danger">+ Nuevo pedido</a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Todavía no hiciste ningún pedido.</div>
+}
+
+@if (enCurso.Any())
+{
+    <h3 class="h5 fw-bold mb-3">🛵 En curso</h3>
+    <div class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+        @foreach (var p in enCurso)
+        {
+            <div class="col">
+                <div class="card shadow-sm border-danger h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-bold">Pedido #@p.IdPedido</span>
+                            <span class="badge text-bg-@EstadoTexto.Color(p.Estado)">@EstadoTexto.De(p.Estado)</span>
+                        </div>
+                        <div class="small text-muted mb-2">
+                            @p.Fecha.ToString("dd/MM/yyyy HH:mm") ·
+                            @(p.TipoEntrega == TipoEntrega.Delivery ? "Delivery" : "Retiro")
+                        </div>
+                        <div class="fw-bold mb-3">$@p.Total.ToString("N2")</div>
+                        <a asp-action="Detalle" asp-route-id="@p.IdPedido" class="btn btn-danger btn-sm">Seguir pedido</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@if (anteriores.Any())
+{
+    <h3 class="h5 fw-bold mb-3">Pedidos anteriores</h3>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white shadow-sm">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Fecha</th>
+                    <th>Entrega</th>
+                    <th>Estado</th>
+                    <th class="text-end">Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in anteriores)
+                {
+                    <tr>
+                        <td>@p.IdPedido</td>
+                        <td>@p.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>@(p.TipoEntrega == TipoEntrega.Delivery ? "Delivery" : "Retiro")</td>
+                        <td><span class="badge text-bg-@EstadoTexto.Color(p.Estado)">@EstadoTexto.De(p.Estado)</span></td>
+                        <td class="text-end">$@p.Total.ToString("N2")</td>
+                        <td class="text-end"><a asp-action="Detalle" asp-route-id="@p.IdPedido" class="btn btn-sm btn-outline-danger">Ver</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

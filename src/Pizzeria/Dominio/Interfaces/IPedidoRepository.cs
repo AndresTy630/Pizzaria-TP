@@ -8,5 +8,6 @@ namespace Pizzeria.Dominio.Interfaces
         Task<int> CrearPedidoAsync(Pedido pedido);
         Task<Pedido?> ObtenerPorIdAsync(int id);
         Task ActualizarEstadoAsync(int idPedido, EstadoPedido nuevoEstado);
+        Task<IEnumerable<Pedido>> ObtenerPorUsuarioAsync(int idUsuario);
     }
 }

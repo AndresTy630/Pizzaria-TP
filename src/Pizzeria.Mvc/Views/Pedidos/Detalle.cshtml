@@ -1,0 +1,118 @@
+@model PedidoDetalleViewModel
+@using Pizzeria.Dominio.Enums
+
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = $"Pedido #{Model.IdPedido}";
+    var esDelivery = Model.TipoEntrega == TipoEntrega.Delivery;
+}
+
+<a asp-action="Index" class="link-secondary">← Mis pedidos</a>
+<h2 class="fw-bold mt-2">Pedido #@Model.IdPedido</h2>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="fw-bold">Estado</span>
+            <span id="badgeEstado" class="badge text-bg-@EstadoTexto.Color(Model.Estado) fs-6">@EstadoTexto.De(Model.Estado)</span>
+        </div>
+
+        <!-- Pasos -->
+        <div class="d-flex justify-content-between text-center" id="pasos">
+            <div class="paso flex-fill" data-estado="0"><div class="punto">1</div><div class="small">Recibido</div></div>
+            <div class="paso flex-fill" data-estado="1"><div class="punto">2</div><div class="small">Preparando</div></div>
+            <div class="paso flex-fill" data-estado="2"><div class="punto">3</div><div class="small">Listo</div></div>
+            @if (esDelivery)
+            {
+                <div class="paso flex-fill" data-estado="3"><div class="punto">4</div><div class="small">En viaje</div></div>
+            }
+            <div class="paso flex-fill" data-estado="4"><div class="punto">@(esDelivery ? 5 : 4)</div><div class="small">Entregado</div></div>
+        </div>
+
+        <div class="small text-muted mt-3">
+            @Model.Fecha.ToString("dd/MM/yyyy HH:mm") ·
+            @(esDelivery ? $"Delivery a {Model.DireccionEntrega}" : "Retiro en sucursal")
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Pizza</th>
+                    <th class="text-center">Cant.</th>
+                    <th class="text-end">Precio unit.</th>
+                    <th class="text-end">Importe</th>
+                    <th class="text-end">Descuento</th>
+                    <th class="text-end">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var l in Model.Lineas)
+                {
+                    <tr>
+                        <td>@l.Nombre</td>
+                        <td class="text-center">@l.Cantidad</td>
+                        <td class="text-end text-muted">$@l.PrecioUnitario.ToString("N2")</td>
+                        <td class="text-end">$@l.Importe.ToString("N2")</td>
+                        <td class="text-end text-danger">@(l.Descuento > 0 ? "-$" + l.Descuento.ToString("N2") : "—")</td>
+                        <td class="text-end fw-bold">$@l.Subtotal.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr class="fw-bold fs-5">
+                    <td colspan="5" class="text-end">Total</td>
+                    <td class="text-end">$@Model.Total.ToString("N2")</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+<style>
+    .paso .punto { width: 36px; height: 36px; border-radius: 50%; margin: 0 auto 4px;
+                   display: flex; align-items: center; justify-content: center;
+                   background: #dee2e6; color: #6c757d; font-weight: bold; }
+    .paso.hecho .punto { background: #198754; color: #fff; }
+    .paso.actual .punto { background: #dc3545; color: #fff; box-shadow: 0 0 0 4px rgba(220,53,69,.25); }
+</style>
+
+@section Scripts {
+    <script>
+        const idPedido = @Model.IdPedido;
+        let estadoActual = @((int)Model.Estado);
+        const badge = document.getElementById('badgeEstado');
+        const pasos = document.querySelectorAll('.paso');
+        let timer = null;
+
+        function pintar(estado, texto, color) {
+            estadoActual = estado;
+            badge.textContent = texto;
+            badge.className = 'badge fs-6 text-bg-' + color;
+
+            pasos.forEach(p => {
+                const e = parseInt(p.dataset.estado);
+                p.classList.toggle('hecho', e < estado || estado === 4);
+                p.classList.toggle('actual', e === estado && estado !== 4);
+            });
+        }
+
+        async function consultar() {
+            try {
+                const r = await fetch('@Url.Action("Estado", "Pedidos", new { id = Model.IdPedido })');
+                if (!r.ok) return;
+                const d = await r.json();
+                pintar(d.estado, d.texto, d.color);
+                if (d.estado === 4) clearInterval(timer);   // entregado: dejo de consultar
+            } catch (e) {
+                // sin conexión: se reintenta en el próximo ciclo
+            }
+        }
+
+        pintar(estadoActual, badge.textContent, badge.className.split('text-bg-')[1].split(' ')[0]);
+        if (estadoActual !== 4) timer = setInterval(consultar, 3000);
+    </script>
+}

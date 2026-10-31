@@ -64,11 +64,10 @@ public class PedidosController : Controller
         {
             try
             {
-                await _pedidoService.CrearPedidoAsync(
-                    UsuarioId, model.IdSucursal!.Value, model.TipoEntrega, model.DireccionEntrega, lineas);
+                var id = await _pedidoService.CrearPedidoAsync( UsuarioId, model.IdSucursal!.Value, model.TipoEntrega, model.DireccionEntrega, lineas);
 
                 TempData["Exito"] = "¡Pedido recibido! Ya empezamos a prepararlo.";
-                return RedirectToAction("Index", "Pizzas");
+                return RedirectToAction(nameof(Detalle), new { id });
             }
             catch (ArgumentException ex)
             {
@@ -82,6 +81,70 @@ public class PedidosController : Controller
 
         await CargarOpcionesAsync(model);
         return View(model);
+    }
+
+    // ---------- MIS PEDIDOS ----------
+
+    public async Task<IActionResult> Index()
+    {
+        var pedidos = await _pedidoService.ObtenerPedidosDeUsuarioAsync(UsuarioId);
+
+        var model = pedidos.Select(p => new PedidoResumenViewModel
+        {
+            IdPedido = p.IdPedido,
+            Fecha = p.FechaHora,
+            Estado = p.Estado,
+            TipoEntrega = p.TipoEntrega,
+            Total = p.Total
+        }).ToList();
+
+        return View(model);
+    }
+
+    // ---------- SEGUIMIENTO ----------
+
+    public async Task<IActionResult> Detalle(int id)
+    {
+        var pedido = await _pedidoService.ObtenerPedidoAsync(id);
+
+        if (pedido is null || pedido.IdUsuario != UsuarioId)
+            return NotFound();
+
+        var nombres = (await _pizzaService.VerTodasAsync()).ToDictionary(p => p.IdPizza, p => p.Nombre);
+
+        return View(new PedidoDetalleViewModel
+        {
+            IdPedido = pedido.IdPedido,
+            Fecha = pedido.FechaHora,
+            Estado = pedido.Estado,
+            TipoEntrega = pedido.TipoEntrega,
+            Total = pedido.Total,
+            DireccionEntrega = pedido.DireccionEntrega,
+            Lineas = pedido.Detalles.Select(d => new PedidoLineaDetalleViewModel
+            {
+                Nombre = nombres.TryGetValue(d.IdPizza, out var n) ? n : $"Pizza #{d.IdPizza}",
+                Cantidad = d.Cantidad,
+                PrecioUnitario = d.PrecioUnitario,
+                Descuento = d.Descuento
+            }).ToList()
+        });
+    }
+
+    // Lo consulta el JavaScript cada pocos segundos
+    [HttpGet]
+    public async Task<IActionResult> Estado(int id)
+    {
+        var pedido = await _pedidoService.ObtenerPedidoAsync(id);
+
+        if (pedido is null || pedido.IdUsuario != UsuarioId)
+            return NotFound();
+
+        return Json(new
+        {
+            estado = (int)pedido.Estado,
+            texto = EstadoTexto.De(pedido.Estado),
+            color = EstadoTexto.Color(pedido.Estado)
+        });
     }
 
     // Recarga lo que no viaja en el formulario, conservando las cantidades elegidas.

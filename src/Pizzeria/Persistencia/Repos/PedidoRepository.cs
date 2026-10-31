@@ -119,4 +119,17 @@ public class PedidoRepository : RepoBase, IPedidoRepository
 
         await connection.ExecuteAsync( sql, new { IdPedido = idPedido, Estado = (int)nuevoEstado} );
     }
+
+    public async Task<IEnumerable<Pedido>> ObtenerPorUsuarioAsync(int idUsuario)
+    {
+        using var connection = Connection;
+
+        const string sql = @"
+            SELECT *
+            FROM Pedido
+            WHERE idUsuario = @IdUsuario
+            ORDER BY fechaHora DESC;";
+
+        return await connection.QueryAsync<Pedido>(sql, new { IdUsuario = idUsuario });
+    }
 }

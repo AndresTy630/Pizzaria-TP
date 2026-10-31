@@ -171,4 +171,7 @@ public class PedidoService : IPedidoService
             _logger.LogError(ex, $"[ERROR] Falló la simulación del pedido {idPedido}");
         }
     }
+
+    public async Task<IEnumerable<Pedido>> ObtenerPedidosDeUsuarioAsync(int idUsuario)
+    => await _pedidoRepository.ObtenerPorUsuarioAsync(idUsuario);
 }
