@@ -6,6 +6,12 @@
 }
 
 <h2 class="fw-bold mb-4">Gestionar pizzas</h2>
+<a asp-action="Crear" class="btn btn-danger mb-3">+ Nueva pizza</a>
+
+@if (TempData["Exito"] is string exito)
+{
+    <div class="alert alert-success">@exito</div>
+}
 
 @if (TempData["Error"] is string error)
 {

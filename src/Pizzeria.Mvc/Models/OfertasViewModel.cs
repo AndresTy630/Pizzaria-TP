@@ -17,6 +17,9 @@ public class PromocionFormViewModel
     [Range(1, 100, ErrorMessage = "La cantidad mínima debe ser al menos 1.")]
     public int CantidadMinima { get; set; } = 1;
 
+    [Range(1, 100, ErrorMessage = "La cantidad que paga debe ser al menos 1.")]
+    public int? CantidadPaga { get; set; }
+
     public DateTime FechaInicio { get; set; } = DateTime.Now;
     public DateTime FechaFin { get; set; } = DateTime.Now.AddDays(7);
 }
@@ -39,4 +42,6 @@ public class OfertasViewModel
     public decimal Precio { get; set; }
     public List<PromocionItemViewModel> Promociones { get; set; } = new();
     public PromocionFormViewModel Nueva { get; set; } = new();
+    public DateTime FechaInicio { get; set; } = DateTime.Now.Date.AddHours(DateTime.Now.Hour).AddMinutes(DateTime.Now.Minute);
+    public DateTime FechaFin { get; set; } = DateTime.Now.AddDays(7).Date.AddHours(23).AddMinutes(59);
 }

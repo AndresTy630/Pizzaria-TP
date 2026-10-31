@@ -44,9 +44,9 @@ public class PromocionRepository : RepoBase, IPromocionRepository
 
         const string sql = @"
             INSERT INTO Promocion
-            (idPizza, titulo, tipo, valor, cantidadMinima, fechaInicio, fechaFin, activa)
+            (idPizza, titulo, tipo, valor, cantidadMinima, cantidadPaga, fechaInicio, fechaFin, activa)
             VALUES
-            (@IdPizza, @Titulo, @Tipo, @Valor, @CantidadMinima, @FechaInicio, @FechaFin, TRUE);
+            (@IdPizza, @Titulo, @Tipo, @Valor, @CantidadMinima, @CantidadPaga, @FechaInicio, @FechaFin, TRUE);
             SELECT LAST_INSERT_ID();";
 
         return await connection.ExecuteScalarAsync<int>(sql, new
@@ -56,6 +56,7 @@ public class PromocionRepository : RepoBase, IPromocionRepository
             Tipo = (int)p.Tipo,
             p.Valor,
             p.CantidadMinima,
+            p.CantidadPaga,
             p.FechaInicio,
             p.FechaFin
         });

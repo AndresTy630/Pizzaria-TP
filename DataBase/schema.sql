@@ -40,6 +40,8 @@ CREATE TABLE Usuario(
 -- 3. EMPLEADOS
 -- ==========================================
 
+-- rol: 1 = Administrador, 2 = Repartidor
+
 CREATE TABLE Empleado(
     idEmpleado INT NOT NULL AUTO_INCREMENT,
     idUsuario INT NOT NULL,
@@ -80,13 +82,18 @@ CREATE TABLE Pizza(
 -- 5. PROMOCIONES
 -- ==========================================
 
+-- tipo 1 = Porcentaje          (valor = %, cantidadMinima = desde cuántas pizzas)
+-- tipo 2 = Monto fijo por pizza (valor = $, cantidadMinima = desde cuántas pizzas)
+-- tipo 3 = Lleva / Paga         (cantidadMinima = lleva, cantidadPaga = paga; ej. 2x1 -> 2 y 1)
+
 CREATE TABLE Promocion(
     idPromocion INT NOT NULL AUTO_INCREMENT,
     idPizza INT NOT NULL,
     titulo VARCHAR(100) NOT NULL,
-    tipo INT NOT NULL,                      -- 1 = Porcentaje, 2 = Monto fijo por pizza
-    valor DECIMAL(10,2) NOT NULL,           -- 20 (%) o 1000 ($)
-    cantidadMinima INT NOT NULL DEFAULT 1,  -- desde cuántas pizzas aplica
+    tipo INT NOT NULL,
+    valor DECIMAL(10,2) NOT NULL DEFAULT 0,
+    cantidadMinima INT NOT NULL DEFAULT 1,
+    cantidadPaga INT NULL,
     fechaInicio DATETIME NOT NULL,
     fechaFin DATETIME NOT NULL,
     activa BOOLEAN NOT NULL DEFAULT TRUE,
@@ -104,8 +111,10 @@ CREATE TABLE Promocion(
         CHECK (cantidadMinima >= 1),
 
     CONSTRAINT CK_Promocion_Valor CHECK (
-        (tipo = 1 AND valor > 0 AND valor <= 100)
-        OR (tipo = 2 AND valor > 0)
+        (tipo = 1 AND valor > 0 AND valor <= 100 AND cantidadPaga IS NULL)
+        OR (tipo = 2 AND valor > 0 AND cantidadPaga IS NULL)
+        OR (tipo = 3 AND cantidadPaga IS NOT NULL AND cantidadPaga >= 1
+            AND cantidadMinima >= 2 AND cantidadPaga < cantidadMinima)
     )
 );
 

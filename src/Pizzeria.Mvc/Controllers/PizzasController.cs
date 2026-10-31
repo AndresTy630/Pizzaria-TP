@@ -172,6 +172,13 @@ public class PizzasController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> CrearOferta(int id, [Bind(Prefix = "Nueva")] PromocionFormViewModel nueva)
     {
+        if (nueva.Tipo == TipoPromocion.LlevaPaga)
+        {
+            ModelState.Remove("Nueva.Valor");   // el NxM no usa "valor"
+            nueva.Valor = 0;
+            ModelState.Clear();                 // se revalida abajo con Promocion.Validar
+        }
+
         if (ModelState.IsValid)
         {
             try
@@ -183,6 +190,7 @@ public class PizzasController : Controller
                     Tipo = nueva.Tipo,
                     Valor = nueva.Valor,
                     CantidadMinima = nueva.CantidadMinima,
+                    CantidadPaga = nueva.Tipo == TipoPromocion.LlevaPaga ? nueva.CantidadPaga : null,
                     FechaInicio = nueva.FechaInicio,
                     FechaFin = nueva.FechaFin
                 });
@@ -244,5 +252,37 @@ public class PizzasController : Controller
                 };
             }).ToList()
         };
+    }
+
+    // ---------- CREAR ----------
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public IActionResult Crear()
+    {
+        return View(new PizzaEditViewModel());
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Crear(PizzaEditViewModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        try
+        {
+            var pizza = new Pizza(model.Nombre.Trim(), model.Descripcion?.Trim() ?? string.Empty, model.Precio);
+
+            await _pizzaService.RegistrarPizzaAsync(pizza);
+
+            TempData["Exito"] = "Pizza creada.";
+            return RedirectToAction(nameof(Gestion));
+        }
+        catch (ArgumentException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(model);
+        }
     }
 }

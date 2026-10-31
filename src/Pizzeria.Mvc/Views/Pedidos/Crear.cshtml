@@ -1,0 +1,235 @@
+@model CrearPedidoViewModel
+
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Hacer pedido";
+}
+
+<h2 class="fw-bold mb-4">Hacer pedido</h2>
+
+<form asp-action="Crear" method="post">
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <div class="row g-4">
+
+        <!-- IZQUIERDA: ENTREGA -->
+        <div class="col-xl-3 col-lg-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h3 class="h5 fw-bold mb-3">Entrega</h3>
+
+                    <div class="mb-3">
+                        <label asp-for="IdSucursal" class="form-label">Sucursal</label>
+                        <select asp-for="IdSucursal" id="sucursal" asp-items="Model.Sucursales" class="form-select">
+                            <option value="">Seleccioná una sucursal</option>
+                        </select>
+                        <span asp-validation-for="IdSucursal" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="TipoEntrega" class="form-label">Tipo de entrega</label>
+                        <select asp-for="TipoEntrega" id="tipoEntrega" class="form-select">
+                            <option value="1">Retiro en sucursal</option>
+                            <option value="2" id="opcionDelivery">Delivery</option>
+                        </select>
+                    </div>
+
+                    <div id="avisoReparto" class="alert d-none py-2 small"></div>
+
+                    <div class="mb-3" id="bloqueDireccion">
+                        <label asp-for="DireccionEntrega" class="form-label">Dirección de entrega</label>
+                        <input asp-for="DireccionEntrega" class="form-control" />
+                        <span asp-validation-for="DireccionEntrega" class="text-danger small"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger w-100">Confirmar pedido</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTRO: PIZZAS -->
+        <div class="col-xl-5 col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h3 class="h5 fw-bold mb-3">Elegí tus pizzas</h3>
+
+                    @for (int i = 0; i < Model.Lineas.Count; i++)
+                    {
+                        <div class="d-flex align-items-center justify-content-between border-bottom py-3">
+                            <div class="me-3">
+                                <input type="hidden" asp-for="Lineas[i].IdPizza" />
+                                <div class="fw-bold">@Model.Lineas[i].Nombre</div>
+                                <div class="small text-muted">@Model.Lineas[i].Descripcion</div>
+                                <div class="fw-bold">$@Model.Lineas[i].Precio.ToString("N2")</div>
+                                @if (Model.Lineas[i].OfertaTexto is not null)
+                                {
+                                    <span class="badge text-bg-danger">🔥 @Model.Lineas[i].OfertaTexto</span>
+                                }
+                            </div>
+                            <input asp-for="Lineas[i].Cantidad" type="number" min="0" max="50"
+                                   class="form-control cantidad" style="width: 90px;" />
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- DERECHA: TICKET -->
+        <div class="col-xl-4 col-lg-12">
+            <div class="position-sticky" style="top: 1rem;">
+                <div id="ticket" class="bg-white shadow p-4"
+                     style="font-family: 'Courier New', monospace; font-size: .9rem; border-top: 6px dashed #dee2e6; border-bottom: 6px dashed #dee2e6;">
+                    <div class="text-center fw-bold">🍕 PIZZA MASSA CLUB</div>
+                    <div class="text-center small text-muted">Tu pedido</div>
+                    <hr style="border-top: 1px dashed #6c757d; opacity: 1;" />
+
+                    <div id="ticketVacio" class="text-center text-muted py-3">
+                        Todavía no agregaste pizzas.
+                    </div>
+
+                    <div id="ticketLineas"></div>
+
+                    <div id="ticketTotales" class="d-none">
+                        <hr style="border-top: 1px dashed #6c757d; opacity: 1;" />
+                        <div class="d-flex justify-content-between">
+                            <span>SUBTOTAL</span><span id="tSubtotal"></span>
+                        </div>
+                        <div class="d-flex justify-content-between text-danger">
+                            <span>DESCUENTOS</span><span id="tDescuentos"></span>
+                        </div>
+                        <hr style="border-top: 2px double #6c757d; opacity: 1;" />
+                        <div class="d-flex justify-content-between fw-bold fs-5">
+                            <span>TOTAL</span><span id="tTotal"></span>
+                        </div>
+                        <div class="text-center small text-muted mt-3">
+                            Precio estimado. El total final se confirma al hacer el pedido.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const pizzas = @Json.Serialize(Model.Lineas);
+        const reparto = @Json.Serialize(Model.Reparto);
+
+        // ---------- ENTREGA ----------
+        const selSucursal = document.getElementById('sucursal');
+        const selTipo = document.getElementById('tipoEntrega');
+        const opcionDelivery = document.getElementById('opcionDelivery');
+        const bloque = document.getElementById('bloqueDireccion');
+        const aviso = document.getElementById('avisoReparto');
+
+        function mostrarAviso(clase, texto) {
+            aviso.className = 'alert py-2 small alert-' + clase;
+            aviso.textContent = texto;
+        }
+
+        function actualizarEntrega() {
+            const s = reparto.find(x => String(x.idSucursal) === selSucursal.value);
+
+            opcionDelivery.disabled = false;
+            aviso.className = 'alert d-none';
+
+            if (s) {
+                if (s.repartidores === 0) {
+                    opcionDelivery.disabled = true;
+                    if (selTipo.value === '2') selTipo.value = '1';
+                    mostrarAviso('danger', 'Esta sucursal no tiene repartidores: solo podés retirar en el local.');
+                } else if (s.libres > 0) {
+                    mostrarAviso('success', s.libres + (s.libres === 1 ? ' repartidor disponible' : ' repartidores disponibles') + ' en esta sucursal.');
+                } else {
+                    mostrarAviso('warning', 'Todos los repartidores están ocupados. Podés pedir igual: se asignará cuando alguno se libere.');
+                }
+            }
+
+            bloque.style.display = selTipo.value === '2' ? 'block' : 'none';
+        }
+
+        selSucursal.addEventListener('change', actualizarEntrega);
+        selTipo.addEventListener('change', actualizarEntrega);
+        actualizarEntrega();
+
+        // ---------- TICKET ----------
+        const inputs = document.querySelectorAll('input.cantidad');
+        const $lineas = document.getElementById('ticketLineas');
+        const $vacio = document.getElementById('ticketVacio');
+        const $totales = document.getElementById('ticketTotales');
+
+        const plata = n => n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+
+        // Misma regla que Promocion.CalcularDescuento en C#
+        function descuento(promo, precio, cantidad) {
+            if (cantidad < promo.cantidadMinima) return 0;
+            const bruto = precio * cantidad;
+            let d;
+            if (promo.tipo === 3) {
+                const packs = Math.floor(cantidad / promo.cantidadMinima);
+                d = packs * (promo.cantidadMinima - promo.cantidadPaga) * precio;
+            } else if (promo.tipo === 1) {
+                d = bruto * promo.valor / 100;
+            } else {
+                d = promo.valor * cantidad;
+            }
+            return Math.round(Math.min(d, bruto) * 100) / 100;
+        }
+
+        function actualizarTicket() {
+            let subtotal = 0, descuentos = 0, html = '';
+
+            inputs.forEach((input, i) => {
+                const cant = Math.max(0, Math.min(50, parseInt(input.value) || 0));
+                if (cant === 0) return;
+
+                const p = pizzas[i];
+                const bruto = p.precio * cant;
+                subtotal += bruto;
+
+                let mejor = null, mejorDesc = 0;
+                p.promos.forEach(pr => {
+                    const d = descuento(pr, p.precio, cant);
+                    if (d > mejorDesc) { mejor = pr; mejorDesc = d; }
+                });
+                descuentos += mejorDesc;
+
+                html += `<div class="mb-2">
+                    <div class="fw-bold">${p.nombre}</div>
+                    <div class="d-flex justify-content-between">
+                        <span>${cant} x ${plata(p.precio)}</span><span>${plata(bruto)}</span>
+                    </div>`;
+
+                if (mejor) {
+                    html += `<div class="d-flex justify-content-between text-danger small">
+                        <span>↳ ${mejor.resumen}</span><span>-${plata(mejorDesc)}</span>
+                    </div>`;
+                } else {
+                    const faltante = p.promos
+                        .filter(pr => cant < pr.cantidadMinima)
+                        .sort((a, b) => a.cantidadMinima - b.cantidadMinima)[0];
+                    if (faltante) {
+                        const faltan = faltante.cantidadMinima - cant;
+                        html += `<div class="small text-success">💡 Sumá ${faltan} más y tenés ${faltante.resumen.split(' desde')[0]}</div>`;
+                    }
+                }
+                html += '</div>';
+            });
+
+            $lineas.innerHTML = html;
+            const hay = html !== '';
+            $vacio.classList.toggle('d-none', hay);
+            $totales.classList.toggle('d-none', !hay);
+
+            document.getElementById('tSubtotal').textContent = plata(subtotal);
+            document.getElementById('tDescuentos').textContent = descuentos > 0 ? '-' + plata(descuentos) : '—';
+            document.getElementById('tTotal').textContent = plata(subtotal - descuentos);
+        }
+
+        inputs.forEach(i => i.addEventListener('input', actualizarTicket));
+        actualizarTicket();
+    </script>
+}

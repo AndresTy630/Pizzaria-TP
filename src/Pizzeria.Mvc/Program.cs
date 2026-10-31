@@ -21,6 +21,7 @@ builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IPromocionRepository, PromocionRepository>();
 builder.Services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
+builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
 builder.Services.AddScoped<IPromocionRepository, PromocionRepository>();
 
 // Servicios

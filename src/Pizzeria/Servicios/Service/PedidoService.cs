@@ -10,17 +10,77 @@ namespace Pizzeria.Servicios.Service;
 public class PedidoService : IPedidoService
 {
     private readonly IPedidoRepository _pedidoRepository;
+    private readonly IPizzaRepository _pizzaRepository;
+    private readonly IPromocionService _promocionService;
+    private readonly ISucursalRepository _sucursalRepository;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<PedidoService> _logger;
 
     public PedidoService(
         IPedidoRepository pedidoRepository,
+        IPizzaRepository pizzaRepository,
+        IPromocionService promocionService,
+        ISucursalRepository sucursalRepository,
         IServiceScopeFactory scopeFactory,
         ILogger<PedidoService> logger)
     {
         _pedidoRepository = pedidoRepository;
+        _pizzaRepository = pizzaRepository;
+        _promocionService = promocionService;
+        _sucursalRepository = sucursalRepository;
         _scopeFactory = scopeFactory;
         _logger = logger;
+    }
+
+    // Arma el pedido desde las líneas (pizza + cantidad), aplicando la mejor oferta de cada una
+    public async Task<int> CrearPedidoAsync(int idUsuario, int idSucursal, TipoEntrega tipoEntrega,
+                                            string? direccionEntrega, IEnumerable<LineaPedido> lineas)
+    {
+        if (tipoEntrega == TipoEntrega.Delivery)
+        {
+            var reparto = (await _sucursalRepository.ObtenerRepartoAsync())
+                .FirstOrDefault(s => s.IdSucursal == idSucursal);
+
+            if (reparto is null || reparto.Repartidores == 0)
+                throw new ArgumentException(
+                    "La sucursal elegida no tiene repartidores. Elegí retiro en sucursal u otra sucursal.");
+        }
+
+        var pedido = new Pedido
+        {
+            IdUsuario = idUsuario,
+            IdSucursal = idSucursal,
+            TipoEntrega = tipoEntrega,
+            DireccionEntrega = tipoEntrega == TipoEntrega.Delivery
+                ? direccionEntrega?.Trim() ?? string.Empty
+                : string.Empty
+        };
+
+        foreach (var grupo in lineas.Where(l => l.Cantidad > 0).GroupBy(l => l.IdPizza))
+        {
+            var cantidad = grupo.Sum(l => l.Cantidad);
+
+            if (cantidad > 50)
+                throw new ArgumentException("No se pueden pedir más de 50 unidades de una misma pizza.");
+
+            var pizza = await _pizzaRepository.ObtenerPorIdAsync(grupo.Key);
+
+            if (pizza is null || !pizza.Disponible)
+                throw new ArgumentException($"La pizza con ID {grupo.Key} no existe o no está disponible.");
+
+            var (promo, descuento) = await _promocionService.MejorParaAsync(pizza.IdPizza, pizza.Precio, cantidad);
+
+            pedido.AgregarDetalle(new DetallePedido
+            {
+                IdPizza = pizza.IdPizza,
+                Cantidad = cantidad,
+                PrecioUnitario = pizza.Precio,
+                Descuento = descuento,
+                IdPromocion = promo?.IdPromocion
+            });
+        }
+
+        return await CrearPedidoAsync(pedido);
     }
 
     public async Task<int> CrearPedidoAsync(Pedido pedido)
@@ -52,8 +112,7 @@ public class PedidoService : IPedidoService
 
         var idGenerado = await _pedidoRepository.CrearPedidoAsync(pedido);
 
-        _logger.LogInformation(
-            $"[NUEVO] Pedido {idGenerado} registrado con éxito.");
+        _logger.LogInformation($"[NUEVO] Pedido {idGenerado} registrado con éxito.");
 
         _ = Task.Run(async () => await CicloEstadosPedidoAsync(idGenerado, pedido.TipoEntrega));
 

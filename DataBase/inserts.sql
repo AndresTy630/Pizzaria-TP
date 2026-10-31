@@ -21,21 +21,16 @@ INSERT INTO Usuario
 (usuario, nombre, apellido, email, passwordHash, telefono, direccion)
 VALUES
 
--- CLIENTES
+-- CLIENTES (ids 1 a 3)
 ('andres_torrico', 'Andrés', 'Torrico', 'andres@gmail.com', 'HASH_CLIENTE_1', '1198765432', 'CABA'),
-
 ('misael_gomez', 'Misael', 'Gómez', 'misael@gmail.com', 'HASH_CLIENTE_2', '1123456789', 'Av. Siempre Viva 742'),
-
 ('lucia_fernandez', 'Lucía', 'Fernández', 'lucia@gmail.com', 'HASH_CLIENTE_3', '1167891234', 'Av. Santa Fe 1500'),
 
-
--- ADMINISTRADOR
+-- ADMINISTRADOR (id 4)
 ('admin', 'Andrés', 'Torrico', 'admin@pizzeria.com', 'HASH_ADMIN', '1122334455', NULL),
 
-
--- REPARTIDORES
+-- REPARTIDORES (ids 5 y 6)
 ('juan_martinez', 'Juan', 'Martínez', 'juan.repartidor@pizzeria.com', 'HASH_REPARTIDOR_1', '1155553333', NULL),
-
 ('pedro_garcia', 'Pedro', 'García', 'pedro.repartidor@pizzeria.com', 'HASH_REPARTIDOR_2', '1155554444', NULL);
 
 
@@ -50,15 +45,9 @@ VALUES
 INSERT INTO Empleado
 (idUsuario, idSucursal, rol)
 VALUES
-
--- Andrés - Administrador - Sucursal 1
-(4, 1, 1),
-
--- Juan - Repartidor - Sucursal 1
-(7, 1, 3),
-
--- Pedro - Repartidor - Sucursal 3
-(8, 3, 3);
+(4, 1, 1),   -- idEmpleado 1: Admin - Sucursal 1
+(5, 1, 2),   -- idEmpleado 2: Juan (repartidor) - Sucursal 1
+(6, 3, 2);   -- idEmpleado 3: Pedro (repartidor) - Sucursal 3
 
 
 -- ==========================================
@@ -79,35 +68,28 @@ VALUES
 -- 5. PROMOCIONES
 -- ==========================================
 
--- tipo: 1 = Porcentaje, 2 = Monto fijo por pizza
+-- tipo 1 = Porcentaje | 2 = Monto fijo por pizza | 3 = Lleva/Paga (cantidadMinima = lleva)
 
 INSERT INTO Promocion
-(idPizza, titulo, tipo, valor, cantidadMinima, fechaInicio, fechaFin)
+(idPizza, titulo, tipo, valor, cantidadMinima, cantidadPaga, fechaInicio, fechaFin)
 VALUES
-(1, 'Muzza -20%',            1, 20.00,   1, NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY)),
-(4, 'Calabresa -$1000',      2, 1000.00, 1, NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY)),
-(2, 'Fugazzeta 2x1',         1, 50.00,   2, NOW(), DATE_ADD(NOW(), INTERVAL 10 DAY)),
-(5, 'Cuatro Quesos x3 -15%', 1, 15.00,   3, NOW(), DATE_ADD(NOW(), INTERVAL 10 DAY));
+(1, 'Muzza -20%',            1, 20.00,   1, NULL, NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY)),
+(4, 'Calabresa -$1000',      2, 1000.00, 1, NULL, NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY)),
+(2, 'Fugazzeta 2x1',         3, 0.00,    2, 1,    NOW(), DATE_ADD(NOW(), INTERVAL 10 DAY)),
+(5, 'Cuatro Quesos x3 -15%', 1, 15.00,   3, NULL, NOW(), DATE_ADD(NOW(), INTERVAL 10 DAY));
 
 
 -- ==========================================
 -- 6. PEDIDOS DE PRUEBA
 -- ==========================================
 
--- Pedido 1
--- Cliente: Andrés (idUsuario = 1)
--- Sucursal: Corrientes (idSucursal = 1)
--- Envío
--- Repartidor: Juan (idEmpleado = 4)
-
+-- Pedido 1: Andrés, sucursal Corrientes, delivery, repartidor Juan (idEmpleado = 2)
 INSERT INTO Pedido
 (idUsuario, idSucursal, idRepartidor, fechaHora,
  estado, tipoEntrega, direccionEntrega, total)
 VALUES
-(1, 1, 4, NOW(), 4, 2, 'CABA', 25500.00);
+(1, 1, 2, NOW(), 4, 2, 'CABA', 25500.00);
 
-
--- Detalle del Pedido 1
 INSERT INTO DetallePedido
 (idPedido, idPizza, cantidad, precioUnitario)
 VALUES
@@ -116,20 +98,13 @@ VALUES
 (1, 2, 1, 8800.00);
 
 
--- Pedido 2
--- Cliente: Misael (idUsuario = 2)
--- Sucursal: Cabildo (idSucursal = 2)
--- Retiro en pizzería
--- Sin repartidor
-
+-- Pedido 2: Misael, sucursal Cabildo, retiro en local, sin repartidor
 INSERT INTO Pedido
 (idUsuario, idSucursal, idRepartidor, fechaHora,
  estado, tipoEntrega, direccionEntrega, total)
 VALUES
 (2, 2, NULL, NOW(), 3, 1, NULL, 16300.00);
 
-
--- Detalle del Pedido 2
 INSERT INTO DetallePedido
 (idPedido, idPizza, cantidad, precioUnitario)
 VALUES
@@ -137,20 +112,13 @@ VALUES
 (2, 2, 1, 8800.00);
 
 
--- Pedido 3
--- Cliente: Lucía (idUsuario = 3)
--- Sucursal: Rivadavia (idSucursal = 3)
--- Envío
--- Repartidor: Pedro (idEmpleado = 5)
-
+-- Pedido 3: Lucía, sucursal Rivadavia, delivery, repartidor Pedro (idEmpleado = 3)
 INSERT INTO Pedido
 (idUsuario, idSucursal, idRepartidor, fechaHora,
  estado, tipoEntrega, direccionEntrega, total)
 VALUES
-(3, 3, 5, NOW(), 4, 2, 'Av. Santa Fe 1500', 17300.00);
+(3, 3, 3, NOW(), 4, 2, 'Av. Santa Fe 1500', 17300.00);
 
-
--- Detalle del Pedido 3
 INSERT INTO DetallePedido
 (idPedido, idPizza, cantidad, precioUnitario)
 VALUES
