@@ -33,4 +33,9 @@ public class PizzaService : IPizzaService
 
         return await _pizzaRepository.CrearPizzaAsync(pisha);
     }
+
+    public async Task<IEnumerable<Pizza>> VerTodasAsync()
+    {
+        return await _pizzaRepository.ObtenerTodasAsync();
+    }
 }

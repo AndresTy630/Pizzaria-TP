@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Pizzeria.Dominio.Entidades;
+using Pizzeria.Dominio.Enums;
+using Pizzeria.Dominio.Interfaces; 
 using Pizzeria.Mvc.Models;
 using Pizzeria.Servicios.Interface;
 
@@ -11,10 +13,12 @@ namespace Pizzeria.Mvc.Controllers;
 public class AccountController : Controller
 {
     private readonly IUsuarioService _usuarioService;
+    private readonly IEmpleadoRepository _empleadoRepository;
 
-    public AccountController(IUsuarioService usuarioService)
+    public AccountController(IUsuarioService usuarioService, IEmpleadoRepository empleadoRepository)
     {
         _usuarioService = usuarioService;
+        _empleadoRepository = empleadoRepository;
     }
 
     //LOGIN
@@ -40,11 +44,14 @@ public class AccountController : Controller
             return View(model);
         }
 
-        // Datos que quedan guardados en la sesión (cookie)
+        var empleado = await _empleadoRepository.ObtenerPorUsuarioAsync(usuario.IdUsuario);
+        var rol = empleado is null ? "Cliente" : ((Roles)empleado.Rol).ToString();
+
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, usuario.IdUsuario.ToString()),
-            new Claim(ClaimTypes.Name, usuario.Nombre)
+            new Claim(ClaimTypes.Name, usuario.Nombre),
+            new Claim(ClaimTypes.Role, rol)
         };
 
         var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

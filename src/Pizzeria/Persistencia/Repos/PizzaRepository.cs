@@ -48,4 +48,15 @@ public class PizzaRepository : RepoBase, IPizzaRepository
 
         return await connection.ExecuteScalarAsync<int>( sql, pisha );
     }
+
+    public async Task<IEnumerable<Pizza>> ObtenerTodasAsync()
+    {
+        using var connection = Connection;
+
+        const string sql = @"
+            SELECT *
+            FROM Pizza;";
+
+        return await connection.QueryAsync<Pizza>(sql);
+    }
 }

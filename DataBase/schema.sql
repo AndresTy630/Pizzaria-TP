@@ -77,7 +77,41 @@ CREATE TABLE Pizza(
 
 
 -- ==========================================
--- 5. PEDIDOS
+-- 5. PROMOCIONES
+-- ==========================================
+
+CREATE TABLE Promocion(
+    idPromocion INT NOT NULL AUTO_INCREMENT,
+    idPizza INT NOT NULL,
+    titulo VARCHAR(100) NOT NULL,
+    tipo INT NOT NULL,                      -- 1 = Porcentaje, 2 = Monto fijo por pizza
+    valor DECIMAL(10,2) NOT NULL,           -- 20 (%) o 1000 ($)
+    cantidadMinima INT NOT NULL DEFAULT 1,  -- desde cuántas pizzas aplica
+    fechaInicio DATETIME NOT NULL,
+    fechaFin DATETIME NOT NULL,
+    activa BOOLEAN NOT NULL DEFAULT TRUE,
+
+    CONSTRAINT PK_Promocion PRIMARY KEY (idPromocion),
+
+    CONSTRAINT FK_Promocion_Pizza
+        FOREIGN KEY (idPizza)
+        REFERENCES Pizza(idPizza),
+
+    CONSTRAINT CK_Promocion_Fechas
+        CHECK (fechaFin > fechaInicio),
+
+    CONSTRAINT CK_Promocion_CantMin
+        CHECK (cantidadMinima >= 1),
+
+    CONSTRAINT CK_Promocion_Valor CHECK (
+        (tipo = 1 AND valor > 0 AND valor <= 100)
+        OR (tipo = 2 AND valor > 0)
+    )
+);
+
+
+-- ==========================================
+-- 6. PEDIDOS
 -- ==========================================
 
 CREATE TABLE Pedido(
@@ -108,14 +142,16 @@ CREATE TABLE Pedido(
 
 
 -- ==========================================
--- 6. DETALLE DEL PEDIDO
+-- 7. DETALLE DEL PEDIDO
 -- ==========================================
 
 CREATE TABLE DetallePedido(
     idPedido INT NOT NULL,
     idPizza INT NOT NULL,
     cantidad INT NOT NULL,
-    precioUnitario DECIMAL(10,2) NOT NULL,
+    precioUnitario DECIMAL(10,2) NOT NULL,       -- precio original
+    descuento DECIMAL(10,2) NOT NULL DEFAULT 0,  -- descuento total de la línea
+    idPromocion INT NULL,                        -- promo aplicada (historial)
 
     CONSTRAINT PK_DetallePedido
         PRIMARY KEY (idPedido, idPizza),
@@ -126,5 +162,9 @@ CREATE TABLE DetallePedido(
 
     CONSTRAINT FK_DetallePedido_Pizza
         FOREIGN KEY (idPizza)
-        REFERENCES Pizza(idPizza)
+        REFERENCES Pizza(idPizza),
+
+    CONSTRAINT FK_DetallePedido_Promocion
+        FOREIGN KEY (idPromocion)
+        REFERENCES Promocion(idPromocion)
 );

@@ -13,12 +13,14 @@ builder.Services.AddControllersWithViews();
 // Login con cookie
 builder.Services
     .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(o => o.LoginPath = "/Account/Login");
+    .AddCookie(o => { o.LoginPath = "/Account/Login"; o.AccessDeniedPath = "/Home/Index";});
 
 // Repositorios
 builder.Services.AddScoped<IPizzaRepository, PizzaRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IPromocionRepository, PromocionRepository>();
+builder.Services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
 
 // Servicios
 builder.Services.AddScoped<IPizzaService, PizzaService>();

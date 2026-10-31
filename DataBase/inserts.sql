@@ -33,12 +33,6 @@ VALUES
 ('admin', 'Andrés', 'Torrico', 'admin@pizzeria.com', 'HASH_ADMIN', '1122334455', NULL),
 
 
--- CHEFS
-('carlos_perez', 'Carlos', 'Pérez', 'carlos.chef@pizzeria.com', 'HASH_CHEF_1', '1155551111', NULL),
-
-('sofia_rodriguez', 'Sofía', 'Rodríguez', 'sofia.chef@pizzeria.com', 'HASH_CHEF_2', '1155552222', NULL),
-
-
 -- REPARTIDORES
 ('juan_martinez', 'Juan', 'Martínez', 'juan.repartidor@pizzeria.com', 'HASH_REPARTIDOR_1', '1155553333', NULL),
 
@@ -51,8 +45,7 @@ VALUES
 
 -- Roles:
 -- 1 = Administrador
--- 2 = Chef
--- 3 = Repartidor
+-- 2 = Repartidor
 
 INSERT INTO Empleado
 (idUsuario, idSucursal, rol)
@@ -60,12 +53,6 @@ VALUES
 
 -- Andrés - Administrador - Sucursal 1
 (4, 1, 1),
-
--- Carlos - Chef - Sucursal 1
-(5, 1, 2),
-
--- Sofía - Chef - Sucursal 2
-(6, 2, 2),
 
 -- Juan - Repartidor - Sucursal 1
 (7, 1, 3),
@@ -89,7 +76,22 @@ VALUES
 
 
 -- ==========================================
--- 5. PEDIDOS DE PRUEBA
+-- 5. PROMOCIONES
+-- ==========================================
+
+-- tipo: 1 = Porcentaje, 2 = Monto fijo por pizza
+
+INSERT INTO Promocion
+(idPizza, titulo, tipo, valor, cantidadMinima, fechaInicio, fechaFin)
+VALUES
+(1, 'Muzza -20%',            1, 20.00,   1, NOW(), DATE_ADD(NOW(), INTERVAL 7 DAY)),
+(4, 'Calabresa -$1000',      2, 1000.00, 1, NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY)),
+(2, 'Fugazzeta 2x1',         1, 50.00,   2, NOW(), DATE_ADD(NOW(), INTERVAL 10 DAY)),
+(5, 'Cuatro Quesos x3 -15%', 1, 15.00,   3, NOW(), DATE_ADD(NOW(), INTERVAL 10 DAY));
+
+
+-- ==========================================
+-- 6. PEDIDOS DE PRUEBA
 -- ==========================================
 
 -- Pedido 1

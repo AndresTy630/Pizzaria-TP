@@ -32,11 +32,9 @@ public class Pedido
         FechaHora = DateTime.Now;
     }
 
-    public void CalcularTotal()
+   public void CalcularTotal()
     {
-        Total = (Detalles is null || Detalles.Count == 0)
-            ? 0
-            : Detalles.Sum(d => d.Cantidad * d.PrecioUnitario);
+        Total = _detalles.Sum(d => d.Subtotal);
     }
 
     public void AgregarDetalle(DetallePedido detalle)

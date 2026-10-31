@@ -1,0 +1,41 @@
+@model IEnumerable<PizzaGestionViewModel>
+
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Gestionar pizzas";
+}
+
+<h2 class="fw-bold mb-4">Gestionar pizzas</h2>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle bg-white shadow-sm">
+        <thead class="table-light">
+            <tr>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th class="text-end">Precio</th>
+                <th class="text-center">Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var pizza in Model)
+            {
+                <tr>
+                    <td class="fw-bold">@pizza.Nombre</td>
+                    <td class="text-muted">@pizza.Descripcion</td>
+                    <td class="text-end">$@pizza.Precio.ToString("N2")</td>
+                    <td class="text-center">
+                        @if (pizza.Disponible)
+                        {
+                            <span class="badge text-bg-success">Disponible</span>
+                        }
+                        else
+                        {
+                            <span class="badge text-bg-secondary">Agotada</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

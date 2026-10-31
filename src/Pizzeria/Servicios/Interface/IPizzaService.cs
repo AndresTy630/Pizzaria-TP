@@ -7,4 +7,5 @@ public interface IPizzaService
     Task<IEnumerable<Pizza>> VerDisponiblesAsync();
     Task<Pizza?> ObtenerPizzaAsync(int id);
     Task<int> RegistrarPizzaAsync(Pizza pisha);
+    Task<IEnumerable<Pizza>> VerTodasAsync();
 }

@@ -29,4 +29,21 @@ public class PizzasController : Controller
 
         return View(model);
     }
+
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Gestion()
+    {
+        var pizzas = await _pizzaService.VerTodasAsync();
+
+        var model = pizzas.Select(p => new PizzaGestionViewModel
+        {
+            IdPizza = p.IdPizza,
+            Nombre = p.Nombre,
+            Descripcion = p.Descripcion,
+            Precio = p.Precio,
+            Disponible = p.Disponible
+        });
+
+        return View(model);
+    }
 }
