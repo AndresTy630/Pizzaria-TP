@@ -5,39 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Pizza Massa Club</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 </head>
 <body class="bg-body-tertiary">
 
     <div class="row g-0 min-vh-100">
 
-        <aside class="col-md-3 col-lg-2 bg-dark text-white p-3">
+        <aside class="col-md-3 col-lg-2 bg-dark text-white p-3 d-flex flex-column">
             <a asp-controller="Home" asp-action="Index"
-               class="h5 text-white text-decoration-none">🍕 Massa Club</a>
+            class="h5 fw-bold text-white text-decoration-none d-flex align-items-center gap-2">
+                <i class="bi bi-pizza-fill text-warning"></i> Massa Club
+            </a>
 
-            <ul class="nav flex-column mt-4">
+            <hr class="border-secondary" />
+
+            <div class="mb-4">
+                <div class="small text-secondary">Sesión</div>
+                <div class="fw-semibold text-truncate">@User.Identity?.Name</div>
+                <span class="badge text-bg-danger mt-1">
+                    @(User.IsInRole("Admin") ? "Administrador" : "Cliente")
+                </span>
+            </div>
+
+            <ul class="nav flex-column gap-1">
                 <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="Dashboard" asp-action="Index">Inicio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="Pizzas" asp-action="Index">Pizzas</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" asp-controller="Pedidos" asp-action="Index">Mis pedidos</a>
+                    <a asp-controller="Dashboard" asp-action="Index"
+                    class="nav-link text-white d-flex align-items-center gap-2 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active bg-danger rounded" : "")">
+                        <i class="bi bi-house-door"></i> Inicio
+                    </a>
                 </li>
 
-                @* Solo lo ve el admin *@
+                <li class="nav-item">
+                    <a asp-controller="Pizzas" asp-action="Index"
+                    class="nav-link text-white d-flex align-items-center gap-2 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Pizzas" ? "active bg-danger rounded" : "")">
+                        <i class="bi bi-pizza"></i> Pizzas
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a asp-controller="Pedidos" asp-action="Index"
+                    class="nav-link text-white d-flex align-items-center gap-2 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Pedidos" ? "active bg-danger rounded" : "")">
+                        <i class="bi bi-receipt"></i> Mis pedidos
+                    </a>
+                </li>
+
                 @if (User.IsInRole("Admin"))
                 {
+                    <li class="nav-item mt-3">
+                        <div class="text-secondary small px-3 mb-1">Administración</div>
+                    </li>
+
                     <li class="nav-item">
-                        <a class="nav-link text-white" asp-controller="Pizzas" asp-action="Gestion">Gestionar pizzas</a>
+                        <a asp-controller="Pizzas" asp-action="Gestion"
+                        class="nav-link text-white d-flex align-items-center gap-2">
+                            <i class="bi bi-gear"></i> Gestionar pizzas
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a asp-controller="Pizzas" asp-action="Crear"
+                        class="nav-link text-white d-flex align-items-center gap-2">
+                            <i class="bi bi-plus-circle"></i> Nueva pizza
+                        </a>
                     </li>
                 }
             </ul>
 
-            <hr />
-
-            <a asp-controller="Account" asp-action="Login"
-               class="btn btn-outline-light btn-sm w-100">Cerrar sesión</a>
+            <div class="mt-auto">
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2">
+                        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                    </button>
+                </form>
+            </div>
         </aside>
 
         <main class="col-md-9 col-lg-10 p-4">
