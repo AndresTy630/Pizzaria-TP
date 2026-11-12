@@ -11,7 +11,7 @@ public static class PedidoEndpoints
     {
         var grupo = app.MapGroup("/api/pedidos").WithTags("Gestión de Pedidos");
 
-        grupo.MapPost("/", async (CrearPedidoDto request, IPedidoService pedidoService, IPizzaRepository pizzaRepo, IPromocionRepository promoRepo) =>
+        grupo.MapPost("/", async (CrearPedidoDto request, IPedidoService pedidoService, IPizzaRepository pizzaRepo) =>
         {
             try
             {
@@ -30,21 +30,11 @@ public static class PedidoEndpoints
                     if (pizza == null || !pizza.Disponible)
                         return Results.BadRequest(new { Error = $"La pizza con ID {item.IdPizza} no existe o no está disponible." });
 
-                    var promos = await promoRepo.ObtenerVigentesPorPizzaAsync(item.IdPizza);
-
-                    var mejor = promos
-                        .Select(p => new { Promo = p, Descuento = p.CalcularDescuento(pizza.Precio, item.Cantidad) })
-                        .Where(x => x.Descuento > 0)
-                        .OrderByDescending(x => x.Descuento)
-                        .FirstOrDefault();
-
                     nuevoPedido.AgregarDetalle(new DetallePedido
                     {
                         IdPizza = item.IdPizza,
                         Cantidad = item.Cantidad,
-                        PrecioUnitario = pizza.Precio,
-                        Descuento = mejor?.Descuento ?? 0,
-                        IdPromocion = mejor?.Promo.IdPromocion
+                        PrecioUnitario = pizza.Precio
                     });
                 }
 

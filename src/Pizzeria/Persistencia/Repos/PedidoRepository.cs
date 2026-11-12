@@ -47,9 +47,9 @@ public class PedidoRepository : RepoBase, IPedidoRepository
 
             const string sqlDetalle = @"
             INSERT INTO DetallePedido
-            (idPedido, idPizza, cantidad, precioUnitario, descuento, idPromocion)
+            (idPedido, idPizza, cantidad, precioUnitario)
             VALUES
-            (@IdPedido, @IdPizza, @Cantidad, @PrecioUnitario, @Descuento, @IdPromocion);";
+            (@IdPedido, @IdPizza, @Cantidad, @PrecioUnitario);";
 
             foreach (var detalle in pedido.Detalles)
             {
@@ -60,14 +60,11 @@ public class PedidoRepository : RepoBase, IPedidoRepository
                         IdPedido = idPedido,
                         detalle.IdPizza,
                         detalle.Cantidad,
-                        detalle.PrecioUnitario,
-                        detalle.Descuento,
-                        detalle.IdPromocion
+                        detalle.PrecioUnitario
                     },
                     transaction
                 );
             }
-
             transaction.Commit();
 
             return idPedido;

@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Pizzeria.Dominio.Entidades;
 using Pizzeria.Mvc.Models;
 using Pizzeria.Servicios.Interface;
-using Pizzeria.Dominio.Entidades;
-using Pizzeria.Dominio.Enums;
 
 namespace Pizzeria.Mvc.Controllers;
 
@@ -11,59 +10,31 @@ namespace Pizzeria.Mvc.Controllers;
 public class PizzasController : Controller
 {
     private readonly IPizzaService _pizzaService;
-    private readonly IPromocionService _promocionService;
 
-    public PizzasController(IPizzaService pizzaService, IPromocionService promocionService)
+    public PizzasController(IPizzaService pizzaService)
     {
         _pizzaService = pizzaService;
-        _promocionService = promocionService;
     }
 
-    public async Task<IActionResult> Index(string? buscar, string? orden, bool soloOfertas = false)
+    public async Task<IActionResult> Index(string? buscar, string? orden)
     {
         var pizzas = await _pizzaService.VerDisponiblesAsync();
-        var promos = (await _promocionService.ObtenerVigentesAsync()).ToLookup(p => p.IdPizza);
 
-        var items = pizzas.Select(p =>
+        var items = pizzas.Select(p => new PizzaViewModel
         {
-            var delPizza = promos[p.IdPizza].ToList();
-
-            // Mejor promo que ya descuenta comprando 1 pizza
-            var inmediata = delPizza
-                .Select(x => new { Promo = x, Descuento = x.CalcularDescuento(p.Precio, 1) })
-                .Where(x => x.Descuento > 0)
-                .OrderByDescending(x => x.Descuento)
-                .FirstOrDefault();
-
-            // Si no hay, una promo que exige cantidad mínima
-            var condicionada = inmediata is null
-                ? delPizza.OrderBy(x => x.CantidadMinima).FirstOrDefault()
-                : null;
-
-            var promoMostrada = inmediata?.Promo ?? condicionada;
-
-            return new PizzaViewModel
-            {
-                IdPizza = p.IdPizza,
-                Nombre = p.Nombre,
-                Descripcion = p.Descripcion,
-                Precio = p.Precio,
-                PrecioFinal = p.Precio - (inmediata?.Descuento ?? 0),
-                OfertaTexto = promoMostrada?.Resumen(),
-                OfertaHasta = promoMostrada?.FechaFin
-            };
+            IdPizza = p.IdPizza,
+            Nombre = p.Nombre,
+            Descripcion = p.Descripcion,
+            Precio = p.Precio
         });
 
         if (!string.IsNullOrWhiteSpace(buscar))
             items = items.Where(p => p.Nombre.Contains(buscar.Trim(), StringComparison.OrdinalIgnoreCase));
 
-        if (soloOfertas)
-            items = items.Where(p => p.TieneOferta);
-
         items = orden switch
         {
-            "precio_asc"  => items.OrderBy(p => p.PrecioFinal),
-            "precio_desc" => items.OrderByDescending(p => p.PrecioFinal),
+            "precio_asc"  => items.OrderBy(p => p.Precio),
+            "precio_desc" => items.OrderByDescending(p => p.Precio),
             _             => items.OrderBy(p => p.Nombre)
         };
 
@@ -71,8 +42,7 @@ public class PizzasController : Controller
         {
             Pizzas = items.ToList(),
             Buscar = buscar,
-            Orden = orden ?? "nombre",
-            SoloOfertas = soloOfertas
+            Orden = orden ?? "nombre"
         });
     }
 
@@ -93,8 +63,6 @@ public class PizzasController : Controller
         return View(model);
     }
 
-    // ---------- DISPONIBILIDAD ----------
-
     [Authorize(Roles = "Admin")]
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> CambiarDisponibilidad(int id)
@@ -110,8 +78,6 @@ public class PizzasController : Controller
 
         return RedirectToAction(nameof(Gestion));
     }
-
-    // ---------- EDITAR ----------
 
     [Authorize(Roles = "Admin")]
     [HttpGet]
@@ -155,106 +121,6 @@ public class PizzasController : Controller
             return View(model);
         }
     }
-
-    // ---------- OFERTAS ----------
-
-    [Authorize(Roles = "Admin")]
-    [HttpGet]
-    public async Task<IActionResult> Ofertas(int id)
-    {
-        var model = await ArmarOfertasAsync(id, new PromocionFormViewModel());
-        if (model is null) return NotFound();
-
-        return View(model);
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> CrearOferta(int id, [Bind(Prefix = "Nueva")] PromocionFormViewModel nueva)
-    {
-        if (nueva.Tipo == TipoPromocion.LlevaPaga)
-        {
-            ModelState.Remove("Nueva.Valor");   // el NxM no usa "valor"
-            nueva.Valor = 0;
-            ModelState.Clear();                 // se revalida abajo con Promocion.Validar
-        }
-
-        if (ModelState.IsValid)
-        {
-            try
-            {
-                await _promocionService.CrearAsync(new Promocion
-                {
-                    IdPizza = id,
-                    Titulo = nueva.Titulo.Trim(),
-                    Tipo = nueva.Tipo,
-                    Valor = nueva.Valor,
-                    CantidadMinima = nueva.CantidadMinima,
-                    CantidadPaga = nueva.Tipo == TipoPromocion.LlevaPaga ? nueva.CantidadPaga : null,
-                    FechaInicio = nueva.FechaInicio,
-                    FechaFin = nueva.FechaFin
-                });
-
-                TempData["Exito"] = "Oferta creada.";
-                return RedirectToAction(nameof(Ofertas), new { id });
-            }
-            catch (ArgumentException ex)
-            {
-                ModelState.AddModelError(string.Empty, ex.Message);
-            }
-        }
-
-        var model = await ArmarOfertasAsync(id, nueva);
-        if (model is null) return NotFound();
-
-        return View(nameof(Ofertas), model);
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> DesactivarOferta(int id, int idPromocion)
-    {
-        await _promocionService.DesactivarAsync(idPromocion);
-        TempData["Exito"] = "Oferta desactivada.";
-        return RedirectToAction(nameof(Ofertas), new { id });
-    }
-
-    private async Task<OfertasViewModel?> ArmarOfertasAsync(int idPizza, PromocionFormViewModel form)
-    {
-        var pizza = await _pizzaService.ObtenerPizzaAsync(idPizza);
-        if (pizza is null) return null;
-
-        var promos = await _promocionService.ObtenerPorPizzaAsync(idPizza);
-
-        return new OfertasViewModel
-        {
-            IdPizza = pizza.IdPizza,
-            Nombre = pizza.Nombre,
-            Precio = pizza.Precio,
-            Nueva = form,
-            Promociones = promos.Select(p =>
-            {
-                var estado = p.Estado();
-                var texto = p.Tipo == TipoPromocion.Porcentaje
-                    ? $"{p.Valor:0.##}% off"
-                    : $"${p.Valor:N0} menos por pizza";
-                if (p.CantidadMinima > 1) texto += $" (desde {p.CantidadMinima} pizzas)";
-
-                return new PromocionItemViewModel
-                {
-                    IdPromocion = p.IdPromocion,
-                    Titulo = p.Titulo,
-                    Descripcion = texto,
-                    FechaInicio = p.FechaInicio,
-                    FechaFin = p.FechaFin,
-                    Estado = estado,
-                    PuedeDesactivar = estado is "Vigente" or "Programada"
-                };
-            }).ToList()
-        };
-    }
-
-    // ---------- CREAR ----------
 
     [Authorize(Roles = "Admin")]
     [HttpGet]

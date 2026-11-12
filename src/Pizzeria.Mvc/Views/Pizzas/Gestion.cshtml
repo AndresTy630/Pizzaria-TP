@@ -50,9 +50,6 @@
                         <a asp-action="Editar" asp-route-id="@pizza.IdPizza"
                            class="btn btn-sm btn-outline-primary">Editar</a>
 
-                        <a asp-action="Ofertas" asp-route-id="@pizza.IdPizza"
-                           class="btn btn-sm btn-outline-danger">Ofertas</a>
-
                         <form asp-action="CambiarDisponibilidad" asp-route-id="@pizza.IdPizza"
                               method="post" class="d-inline">
                             <button type="submit" class="btn btn-sm btn-outline-secondary">

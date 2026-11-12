@@ -22,14 +22,6 @@
         </select>
     </div>
 
-    <div class="col-6 col-md-2">
-        <div class="form-check">
-            <input class="form-check-input" type="checkbox" name="soloOfertas" value="true"
-                   id="soloOfertas" checked="@Model.SoloOfertas" onchange="this.form.submit()" />
-            <label class="form-check-label" for="soloOfertas">Solo ofertas</label>
-        </div>
-    </div>
-
     <div class="col-12 col-md-2 d-flex gap-2">
         <button type="submit" class="btn btn-danger flex-fill">Buscar</button>
         <a asp-action="Index" class="btn btn-outline-secondary">Limpiar</a>
@@ -45,35 +37,11 @@
     @foreach (var pizza in Model.Pizzas)
     {
         <div class="col">
-            <div class="card h-100 shadow-sm border-0 position-relative @(pizza.TieneOferta ? "border border-danger" : "")">
-
-                @if (pizza.TieneOferta)
-                {
-                    <span class="badge text-bg-danger position-absolute top-0 end-0 m-2 fs-6">
-                        🔥 @pizza.OfertaTexto
-                    </span>
-                }
+            <div class="card h-100 shadow-sm border-0">
 
                 <div class="card-body d-flex flex-column">
                     <h3 class="h5 fw-bold pe-5">@pizza.Nombre</h3>
                     <p class="card-text text-muted">@pizza.Descripcion</p>
-
-                    <div class="mt-auto">
-                        @if (pizza.TieneDescuento)
-                        {
-                            <div class="text-muted"><del>$@pizza.Precio.ToString("N2")</del></div>
-                            <div class="display-6 fw-bold text-danger">$@pizza.PrecioFinal.ToString("N2")</div>
-                        }
-                        else
-                        {
-                            <div class="display-6 fw-bold">$@pizza.Precio.ToString("N2")</div>
-                        }
-
-                        @if (pizza.OfertaHasta is not null)
-                        {
-                            <div class="small text-muted mt-1">Oferta hasta el @pizza.OfertaHasta.Value.ToString("dd/MM")</div>
-                        }
-                    </div>
                 </div>
             </div>
         </div>

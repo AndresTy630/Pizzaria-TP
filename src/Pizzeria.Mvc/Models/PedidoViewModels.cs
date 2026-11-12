@@ -5,24 +5,12 @@ using Pizzeria.Dominio.Enums;
 
 namespace Pizzeria.Mvc.Models;
 
-public class PromoClienteViewModel
-{
-    public string Titulo { get; set; } = string.Empty;
-    public string Resumen { get; set; } = string.Empty;
-    public int Tipo { get; set; }              // 1 = Porcentaje, 2 = Monto fijo
-    public decimal Valor { get; set; }
-    public int CantidadMinima { get; set; }
-    public int CantidadPaga { get; set; }
-}
-
 public class LineaPedidoViewModel
 {
     public int IdPizza { get; set; }
     public string Nombre { get; set; } = string.Empty;
     public string Descripcion { get; set; } = string.Empty;
     public decimal Precio { get; set; }
-    public string? OfertaTexto { get; set; }
-    public List<PromoClienteViewModel> Promos { get; set; } = new();
 
     [Range(0, 50, ErrorMessage = "La cantidad debe estar entre 0 y 50.")]
     public int Cantidad { get; set; }
@@ -58,9 +46,7 @@ public class PedidoLineaDetalleViewModel
     public string Nombre { get; set; } = string.Empty;
     public int Cantidad { get; set; }
     public decimal PrecioUnitario { get; set; }
-    public decimal Descuento { get; set; }
-    public decimal Importe => Cantidad * PrecioUnitario;
-    public decimal Subtotal => Importe - Descuento;
+    public decimal Subtotal => Cantidad * PrecioUnitario;
 }
 
 public class PedidoDetalleViewModel : PedidoResumenViewModel

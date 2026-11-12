@@ -39,36 +39,32 @@
 <div class="card shadow-sm border-0">
     <div class="card-body">
         <table class="table align-middle mb-0">
-            <thead>
+        <thead>
+            <tr>
+                <th>Pizza</th>
+                <th class="text-center">Cant.</th>
+                <th class="text-end">Precio unit.</th>
+                <th class="text-end">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var l in Model.Lineas)
+            {
                 <tr>
-                    <th>Pizza</th>
-                    <th class="text-center">Cant.</th>
-                    <th class="text-end">Precio unit.</th>
-                    <th class="text-end">Importe</th>
-                    <th class="text-end">Descuento</th>
-                    <th class="text-end">Subtotal</th>
+                    <td>@l.Nombre</td>
+                    <td class="text-center">@l.Cantidad</td>
+                    <td class="text-end text-muted">$@l.PrecioUnitario.ToString("N2")</td>
+                    <td class="text-end fw-bold">$@l.Subtotal.ToString("N2")</td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var l in Model.Lineas)
-                {
-                    <tr>
-                        <td>@l.Nombre</td>
-                        <td class="text-center">@l.Cantidad</td>
-                        <td class="text-end text-muted">$@l.PrecioUnitario.ToString("N2")</td>
-                        <td class="text-end">$@l.Importe.ToString("N2")</td>
-                        <td class="text-end text-danger">@(l.Descuento > 0 ? "-$" + l.Descuento.ToString("N2") : "—")</td>
-                        <td class="text-end fw-bold">$@l.Subtotal.ToString("N2")</td>
-                    </tr>
-                }
-            </tbody>
-            <tfoot>
-                <tr class="fw-bold fs-5">
-                    <td colspan="5" class="text-end">Total</td>
-                    <td class="text-end">$@Model.Total.ToString("N2")</td>
-                </tr>
-            </tfoot>
-        </table>
+            }
+        </tbody>
+        <tfoot>
+            <tr class="fw-bold fs-5">
+                <td colspan="3" class="text-end">Total</td>
+                <td class="text-end">$@Model.Total.ToString("N2")</td>
+            </tr>
+        </tfoot>
+    </table>
     </div>
 </div>
 

@@ -14,20 +14,17 @@ public class PedidosController : Controller
 {
     private readonly IPedidoService _pedidoService;
     private readonly IPizzaService _pizzaService;
-    private readonly IPromocionService _promocionService;
     private readonly IUsuarioService _usuarioService;
     private readonly ISucursalRepository _sucursalRepository;
 
     public PedidosController(
         IPedidoService pedidoService,
         IPizzaService pizzaService,
-        IPromocionService promocionService,
         IUsuarioService usuarioService,
         ISucursalRepository sucursalRepository)
     {
         _pedidoService = pedidoService;
         _pizzaService = pizzaService;
-        _promocionService = promocionService;
         _usuarioService = usuarioService;
         _sucursalRepository = sucursalRepository;
     }
@@ -125,7 +122,6 @@ public class PedidosController : Controller
                 Nombre = nombres.TryGetValue(d.IdPizza, out var n) ? n : $"Pizza #{d.IdPizza}",
                 Cantidad = d.Cantidad,
                 PrecioUnitario = d.PrecioUnitario,
-                Descuento = d.Descuento
             }).ToList()
         });
     }
@@ -153,7 +149,6 @@ public class PedidosController : Controller
         var cantidades = model.Lineas.ToDictionary(l => l.IdPizza, l => l.Cantidad);
 
         var pizzas = await _pizzaService.VerDisponiblesAsync();
-        var promos = (await _promocionService.ObtenerVigentesAsync()).ToLookup(p => p.IdPizza);
 
         model.Lineas = pizzas.Select(p => new LineaPedidoViewModel
         {
@@ -161,18 +156,6 @@ public class PedidosController : Controller
             Nombre = p.Nombre,
             Descripcion = p.Descripcion,
             Precio = p.Precio,
-            OfertaTexto = promos[p.IdPizza].Any()
-                ? string.Join(" · ", promos[p.IdPizza].Select(x => x.Resumen()))
-                : null,
-            Promos = promos[p.IdPizza].Select(x => new PromoClienteViewModel
-            {
-                Titulo = x.Titulo,
-                Resumen = x.Resumen(),
-                Tipo = (int)x.Tipo,
-                Valor = x.Valor,
-                CantidadMinima = x.CantidadMinima,
-                CantidadPaga = x.CantidadPaga ?? 0
-            }).ToList(),
             Cantidad = cantidades.TryGetValue(p.IdPizza, out var c) ? c : 0
         }).ToList();
 

@@ -11,7 +11,6 @@ public class PedidoService : IPedidoService
 {
     private readonly IPedidoRepository _pedidoRepository;
     private readonly IPizzaRepository _pizzaRepository;
-    private readonly IPromocionService _promocionService;
     private readonly ISucursalRepository _sucursalRepository;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<PedidoService> _logger;
@@ -19,14 +18,12 @@ public class PedidoService : IPedidoService
     public PedidoService(
         IPedidoRepository pedidoRepository,
         IPizzaRepository pizzaRepository,
-        IPromocionService promocionService,
         ISucursalRepository sucursalRepository,
         IServiceScopeFactory scopeFactory,
         ILogger<PedidoService> logger)
     {
         _pedidoRepository = pedidoRepository;
         _pizzaRepository = pizzaRepository;
-        _promocionService = promocionService;
         _sucursalRepository = sucursalRepository;
         _scopeFactory = scopeFactory;
         _logger = logger;
@@ -68,15 +65,12 @@ public class PedidoService : IPedidoService
             if (pizza is null || !pizza.Disponible)
                 throw new ArgumentException($"La pizza con ID {grupo.Key} no existe o no está disponible.");
 
-            var (promo, descuento) = await _promocionService.MejorParaAsync(pizza.IdPizza, pizza.Precio, cantidad);
 
             pedido.AgregarDetalle(new DetallePedido
             {
                 IdPizza = pizza.IdPizza,
                 Cantidad = cantidad,
                 PrecioUnitario = pizza.Precio,
-                Descuento = descuento,
-                IdPromocion = promo?.IdPromocion
             });
         }
 

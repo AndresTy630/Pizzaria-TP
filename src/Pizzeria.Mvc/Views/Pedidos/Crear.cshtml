@@ -61,10 +61,6 @@
                                 <div class="fw-bold">@Model.Lineas[i].Nombre</div>
                                 <div class="small text-muted">@Model.Lineas[i].Descripcion</div>
                                 <div class="fw-bold">$@Model.Lineas[i].Precio.ToString("N2")</div>
-                                @if (Model.Lineas[i].OfertaTexto is not null)
-                                {
-                                    <span class="badge text-bg-danger">🔥 @Model.Lineas[i].OfertaTexto</span>
-                                }
                             </div>
                             <input asp-for="Lineas[i].Cantidad" type="number" min="0" max="50"
                                    class="form-control cantidad" style="width: 90px;" />
@@ -90,19 +86,9 @@
                     <div id="ticketLineas"></div>
 
                     <div id="ticketTotales" class="d-none">
-                        <hr style="border-top: 1px dashed #6c757d; opacity: 1;" />
-                        <div class="d-flex justify-content-between">
-                            <span>SUBTOTAL</span><span id="tSubtotal"></span>
-                        </div>
-                        <div class="d-flex justify-content-between text-danger">
-                            <span>DESCUENTOS</span><span id="tDescuentos"></span>
-                        </div>
                         <hr style="border-top: 2px double #6c757d; opacity: 1;" />
                         <div class="d-flex justify-content-between fw-bold fs-5">
                             <span>TOTAL</span><span id="tTotal"></span>
-                        </div>
-                        <div class="text-center small text-muted mt-3">
-                            Precio estimado. El total final se confirma al hacer el pedido.
                         </div>
                     </div>
                 </div>
@@ -163,24 +149,8 @@
 
         const plata = n => n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
 
-        // Misma regla que Promocion.CalcularDescuento en C#
-        function descuento(promo, precio, cantidad) {
-            if (cantidad < promo.cantidadMinima) return 0;
-            const bruto = precio * cantidad;
-            let d;
-            if (promo.tipo === 3) {
-                const packs = Math.floor(cantidad / promo.cantidadMinima);
-                d = packs * (promo.cantidadMinima - promo.cantidadPaga) * precio;
-            } else if (promo.tipo === 1) {
-                d = bruto * promo.valor / 100;
-            } else {
-                d = promo.valor * cantidad;
-            }
-            return Math.round(Math.min(d, bruto) * 100) / 100;
-        }
-
         function actualizarTicket() {
-            let subtotal = 0, descuentos = 0, html = '';
+            let total = 0, html = '';
 
             inputs.forEach((input, i) => {
                 const cant = Math.max(0, Math.min(50, parseInt(input.value) || 0));
@@ -188,35 +158,14 @@
 
                 const p = pizzas[i];
                 const bruto = p.precio * cant;
-                subtotal += bruto;
-
-                let mejor = null, mejorDesc = 0;
-                p.promos.forEach(pr => {
-                    const d = descuento(pr, p.precio, cant);
-                    if (d > mejorDesc) { mejor = pr; mejorDesc = d; }
-                });
-                descuentos += mejorDesc;
+                total += bruto;
 
                 html += `<div class="mb-2">
                     <div class="fw-bold">${p.nombre}</div>
                     <div class="d-flex justify-content-between">
                         <span>${cant} x ${plata(p.precio)}</span><span>${plata(bruto)}</span>
-                    </div>`;
-
-                if (mejor) {
-                    html += `<div class="d-flex justify-content-between text-danger small">
-                        <span>↳ ${mejor.resumen}</span><span>-${plata(mejorDesc)}</span>
-                    </div>`;
-                } else {
-                    const faltante = p.promos
-                        .filter(pr => cant < pr.cantidadMinima)
-                        .sort((a, b) => a.cantidadMinima - b.cantidadMinima)[0];
-                    if (faltante) {
-                        const faltan = faltante.cantidadMinima - cant;
-                        html += `<div class="small text-success">💡 Sumá ${faltan} más y tenés ${faltante.resumen.split(' desde')[0]}</div>`;
-                    }
-                }
-                html += '</div>';
+                    </div>
+                </div>`;
             });
 
             $lineas.innerHTML = html;
@@ -224,9 +173,7 @@
             $vacio.classList.toggle('d-none', hay);
             $totales.classList.toggle('d-none', !hay);
 
-            document.getElementById('tSubtotal').textContent = plata(subtotal);
-            document.getElementById('tDescuentos').textContent = descuentos > 0 ? '-' + plata(descuentos) : '—';
-            document.getElementById('tTotal').textContent = plata(subtotal - descuentos);
+            document.getElementById('tTotal').textContent = plata(total);
         }
 
         inputs.forEach(i => i.addEventListener('input', actualizarTicket));
