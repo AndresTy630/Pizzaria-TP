@@ -1,4 +1,6 @@
-﻿public class DetallePedido
+﻿namespace Pizzeria.Dominio.Entidades;
+
+public class DetallePedido
 {
     public int IdPedido { get; set; }
     public int IdPizza { get; set; }

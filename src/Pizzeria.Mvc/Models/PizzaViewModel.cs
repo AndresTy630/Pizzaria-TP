@@ -1,3 +1,5 @@
+Pizzeria.Mvc.Models;
+
 public class PizzaViewModel
 {
     public int IdPizza { get; set; }
