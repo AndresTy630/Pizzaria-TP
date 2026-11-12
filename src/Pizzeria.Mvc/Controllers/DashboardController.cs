@@ -22,33 +22,33 @@ public class DashboardController : Controller
     public async Task<IActionResult> Index()
     {
         var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var rol = User.FindFirstValue(ClaimTypes.Role) ?? "Cliente";
 
-        var pizzas = await _pizzaService.VerDisponiblesAsync();
-        var pedidos = await _pedidoService.ObtenerPedidosDeUsuarioAsync(usuarioId);
+        var pedidos = (await _pedidoService.ObtenerPedidosDeUsuarioAsync(usuarioId))
+            .OrderByDescending(p => p.FechaHora)
+            .Select(p => new PedidoResumenViewModel
+            {
+                IdPedido = p.IdPedido,
+                Fecha = p.FechaHora,
+                Estado = p.Estado,
+                TipoEntrega = p.TipoEntrega,
+                Total = p.Total
+            })
+            .ToList();
 
         var model = new DashboardViewModel
         {
             NombreUsuario = User.FindFirstValue(ClaimTypes.Name) ?? "Usuario",
-            Rol = User.FindFirstValue(ClaimTypes.Role) ?? "Cliente",
-
-            PizzasDisponibles = pizzas.Count(),
-            PedidosTotales = pedidos.Count(),
-            PedidosEnCurso = pedidos.Count(p => p.Estado != EstadoPedido.Entregado),
-            PedidosEntregados = pedidos.Count(p => p.Estado == EstadoPedido.Entregado),
-
-            PedidosRecientes = pedidos
-                .OrderByDescending(p => p.FechaHora)
-                .Take(5)
-                .Select(p => new PedidoResumenViewModel
-                {
-                    IdPedido = p.IdPedido,
-                    Fecha = p.FechaHora,
-                    Estado = p.Estado,
-                    TipoEntrega = p.TipoEntrega,
-                    Total = p.Total
-                })
-                .ToList()
+            Rol = rol,
+            PedidosTotales = pedidos.Count,
+            PedidosEntregados = pedidos.Count(p => !p.EnCurso),
+            TotalGastado = pedidos.Where(p => !p.EnCurso).Sum(p => p.Total),
+            EnCurso = pedidos.Where(p => p.EnCurso).ToList(),
+            Historial = pedidos.Where(p => !p.EnCurso).Take(5).ToList()
         };
+
+        if (rol == "Admin")
+            model.PizzasAgotadas = (await _pizzaService.VerTodasAsync()).Count(p => !p.Disponible);
 
         return View(model);
     }

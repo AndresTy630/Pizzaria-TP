@@ -1,5 +1,3 @@
-using Pizzeria.Dominio.Enums;
-
 namespace Pizzeria.Mvc.Models;
 
 public class DashboardViewModel
@@ -7,10 +5,13 @@ public class DashboardViewModel
     public string NombreUsuario { get; set; } = string.Empty;
     public string Rol { get; set; } = "Cliente";
 
-    public int PizzasDisponibles { get; set; }
     public int PedidosTotales { get; set; }
-    public int PedidosEnCurso { get; set; }
     public int PedidosEntregados { get; set; }
+    public decimal TotalGastado { get; set; }
 
-    public List<PedidoResumenViewModel> PedidosRecientes { get; set; } = new();
+    public List<PedidoResumenViewModel> EnCurso { get; set; } = new();
+    public List<PedidoResumenViewModel> Historial { get; set; } = new();
+
+    // Solo para admin
+    public int PizzasAgotadas { get; set; }
 }

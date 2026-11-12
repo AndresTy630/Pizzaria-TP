@@ -1,184 +1,139 @@
 @model DashboardViewModel
 @using Pizzeria.Dominio.Enums
 @{
-    ViewData["Title"] = "Panel";
+    ViewData["Title"] = "Inicio";
     Layout = "_DashboardLayout";
 }
 
-<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div>
         <h1 class="fw-bold mb-1">¡Hola, @Model.NombreUsuario!</h1>
         <p class="text-muted mb-0">
-            Rol: <span class="badge text-bg-danger text-uppercase">@Model.Rol</span>
+            @Model.PedidosTotales @(Model.PedidosTotales == 1 ? "pedido" : "pedidos") ·
+            @Model.PedidosEntregados @(Model.PedidosEntregados == 1 ? "entregado" : "entregados") ·
+            $@Model.TotalGastado.ToString("N2") gastados
         </p>
     </div>
-
     <a asp-controller="Pedidos" asp-action="Crear" class="btn btn-danger">
-        <i class="bi bi-plus-lg me-1"></i> Hacer un pedido
+        <i class="bi bi-plus-lg me-1"></i> Nuevo pedido
     </a>
 </div>
 
-<div class="row g-3 mb-4">
-    <div class="col-12 col-md-6 col-xl-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center">
-                <div class="fs-1 text-danger me-3">
-                    <i class="bi bi-pizza"></i>
-                </div>
-                <div>
-                    <div class="text-muted small">Pizzas disponibles</div>
-                    <div class="fs-3 fw-bold">@Model.PizzasDisponibles</div>
-                </div>
-            </div>
+@if (Model.Rol == "Admin" && Model.PizzasAgotadas > 0)
+{
+    <div class="alert alert-warning d-flex justify-content-between align-items-center">
+        <span>
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Hay <strong>@Model.PizzasAgotadas</strong> @(Model.PizzasAgotadas == 1 ? "pizza agotada" : "pizzas agotadas") en el menú.
+        </span>
+        <a asp-controller="Pizzas" asp-action="Gestion" class="btn btn-sm btn-outline-dark">Gestionar</a>
+    </div>
+}
+
+<!-- EN CURSO -->
+<h2 class="h5 fw-bold mb-3">En curso</h2>
+
+@if (!Model.EnCurso.Any())
+{
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body text-center text-muted py-4">
+            <i class="bi bi-moon-stars fs-3"></i>
+            <p class="mb-0 mt-2">No tenés pedidos en curso.</p>
         </div>
     </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-lg-2 g-3 mb-4">
+        @foreach (var p in Model.EnCurso)
+        {
+            <div class="col">
+                <div class="card border-0 shadow-sm h-100 pedido-activo" data-id="@p.IdPedido">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="fw-bold">Pedido #@p.IdPedido</div>
+                                <div class="small text-muted">
+                                    @p.Fecha.ToString("dd/MM HH:mm") ·
+                                    @(p.TipoEntrega == TipoEntrega.Delivery ? "Delivery" : "Retiro") ·
+                                    $@p.Total.ToString("N2")
+                                </div>
+                            </div>
+                            <span class="badge estado text-bg-@EstadoTexto.Color(p.Estado)">@EstadoTexto.De(p.Estado)</span>
+                        </div>
 
-    <div class="col-12 col-md-6 col-xl-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center">
-                <div class="fs-1 text-primary me-3">
-                    <i class="bi bi-receipt"></i>
-                </div>
-                <div>
-                    <div class="text-muted small">Mis pedidos</div>
-                    <div class="fs-3 fw-bold">@Model.PedidosTotales</div>
-                </div>
-            </div>
-        </div>
-    </div>
+                        <div class="progress my-3" style="height: 8px;">
+                            <div class="progress-bar bg-danger barra" style="width: @((int)p.Estado * 25)%; transition: width .6s;"></div>
+                        </div>
 
-    <div class="col-12 col-md-6 col-xl-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center">
-                <div class="fs-1 text-warning me-3">
-                    <i class="bi bi-hourglass-split"></i>
-                </div>
-                <div>
-                    <div class="text-muted small">En curso</div>
-                    <div class="fs-3 fw-bold">@Model.PedidosEnCurso</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-12 col-md-6 col-xl-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center">
-                <div class="fs-1 text-success me-3">
-                    <i class="bi bi-check2-circle"></i>
-                </div>
-                <div>
-                    <div class="text-muted small">Entregados</div>
-                    <div class="fs-3 fw-bold">@Model.PedidosEntregados</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4">
-    <div class="col-12 col-lg-7">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-0 pt-3">
-                <h5 class="fw-bold mb-0">Últimos pedidos</h5>
-            </div>
-
-            <div class="card-body">
-                @if (!Model.PedidosRecientes.Any())
-                {
-                    <div class="text-center text-muted py-5">
-                        <i class="bi bi-receipt-cutoff fs-1"></i>
-                        <p class="mt-3 mb-0">Todavía no hiciste ningún pedido.</p>
-                        <a asp-controller="Pedidos" asp-action="Crear" class="btn btn-danger mt-3">
-                            Hacer mi primer pedido
-                        </a>
+                        <a asp-controller="Pedidos" asp-action="Detalle" asp-route-id="@p.IdPedido"
+                           class="btn btn-sm btn-outline-danger">Seguir pedido</a>
                     </div>
-                }
-                else
-                {
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Pedido</th>
-                                    <th>Fecha</th>
-                                    <th>Entrega</th>
-                                    <th>Estado</th>
-                                    <th class="text-end">Total</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var pedido in Model.PedidosRecientes)
-                                {
-                                    <tr>
-                                        <td class="fw-bold"># @pedido.IdPedido</td>
-                                        <td>@pedido.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
-                                        <td>
-                                            @(pedido.TipoEntrega == TipoEntrega.Delivery ? "Delivery" : "Retiro")
-                                        </td>
-                                        <td>
-                                            <span class="badge text-bg-@EstadoTexto.Color(pedido.Estado)">
-                                                @EstadoTexto.De(pedido.Estado)
-                                            </span>
-                                        </td>
-                                        <td class="text-end fw-bold">
-                                            @pedido.Total.ToString("N2")
-                                        </td>
-                                        <td class="text-end">
-                                            <a asp-controller="Pedidos"
-                                               asp-action="Detalle"
-                                               asp-route-id="@pedido.IdPedido"
-                                               class="btn btn-sm btn-outline-danger">
-                                                Ver
-                                            </a>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                }
+                </div>
             </div>
-        </div>
+        }
+    </div>
+}
+
+<!-- HISTORIAL -->
+@if (Model.Historial.Any())
+{
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 fw-bold mb-0">Últimos pedidos</h2>
+        <a asp-controller="Pedidos" asp-action="Index" class="small">Ver todos</a>
     </div>
 
-    <div class="col-12 col-lg-5">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-0 pt-3">
-                <h5 class="fw-bold mb-0">Accesos rápidos</h5>
-            </div>
-
-            <div class="card-body d-flex flex-column gap-3">
-                <a asp-controller="Pizzas" asp-action="Index" class="btn btn-outline-danger text-start">
-                    <i class="bi bi-pizza me-2"></i> Ver menú
-                </a>
-
-                <a asp-controller="Pedidos" asp-action="Crear" class="btn btn-outline-danger text-start">
-                    <i class="bi bi-basket me-2"></i> Hacer un pedido
-                </a>
-
-                <a asp-controller="Pedidos" asp-action="Index" class="btn btn-outline-danger text-start">
-                    <i class="bi bi-list-ul me-2"></i> Mis pedidos
-                </a>
-
-                @if (Model.Rol == "Admin")
-                {
-                    <hr class="my-2" />
-
-                    <a asp-controller="Pizzas" asp-action="Gestion" class="btn btn-outline-dark text-start">
-                        <i class="bi bi-gear me-2"></i> Gestionar pizzas
-                    </a>
-
-                    <a asp-controller="Pizzas" asp-action="Crear" class="btn btn-outline-dark text-start">
-                        <i class="bi bi-plus-circle me-2"></i> Nueva pizza
-                    </a>
-                }
-            </div>
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <tbody>
+                    @foreach (var p in Model.Historial)
+                    {
+                        <tr>
+                            <td class="fw-bold">#@p.IdPedido</td>
+                            <td>@p.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@(p.TipoEntrega == TipoEntrega.Delivery ? "Delivery" : "Retiro")</td>
+                            <td class="text-end">$@p.Total.ToString("N2")</td>
+                            <td class="text-end">
+                                <a asp-controller="Pedidos" asp-action="Detalle" asp-route-id="@p.IdPedido"
+                                   class="btn btn-sm btn-outline-secondary">Ver</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
-</div>
+}
 
 @section Scripts {
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    @if (Model.EnCurso.Any())
+    {
+        <script>
+            const tarjetas = document.querySelectorAll('.pedido-activo');
+            let timer;
+
+            async function refrescar() {
+                let terminado = false;
+                for (const t of tarjetas) {
+                    try {
+                        const r = await fetch('/Pedidos/Estado/' + t.dataset.id);
+                        if (!r.ok) continue;
+                        const d = await r.json();
+
+                        const badge = t.querySelector('.estado');
+                        badge.textContent = d.texto;
+                        badge.className = 'badge estado text-bg-' + d.color;
+                        t.querySelector('.barra').style.width = (d.estado * 25) + '%';
+
+                        if (d.estado === 4) terminado = true;
+                    } catch (e) { /* se reintenta en el próximo ciclo */ }
+                }
+                // Si alguno se entregó, recargo para que pase al historial
+                if (terminado) { clearInterval(timer); setTimeout(() => location.reload(), 1200); }
+            }
+
+            timer = setInterval(refrescar, 3000);
+        </script>
+    }
 }

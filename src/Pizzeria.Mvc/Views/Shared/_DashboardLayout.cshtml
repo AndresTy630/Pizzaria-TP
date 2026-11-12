@@ -1,3 +1,17 @@
+@{
+    var controlador = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var accion = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    bool Activo(string c, string? a = null) =>
+        controlador.Equals(c, StringComparison.OrdinalIgnoreCase) &&
+        (a is null || accion.Equals(a, StringComparison.OrdinalIgnoreCase));
+
+    var nombre = string.IsNullOrWhiteSpace(User.Identity?.Name) ? "Usuario" : User.Identity!.Name!;
+    var inicial = char.ToUpper(nombre[0]);
+    var esAdmin = User.IsInRole("Admin");
+    var esRepartidor = User.IsInRole("Repartidor");
+    var rolTexto = esAdmin ? "Administrador" : esRepartidor ? "Repartidor" : "Cliente";
+}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,85 +20,157 @@
     <title>@ViewData["Title"] - Pizza Massa Club</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+        /* Sidebar: ancho fijo, pegado a la pantalla en escritorio y offcanvas en móvil */
+        .offcanvas-md.sidebar {
+            --bs-offcanvas-width: 270px;
+            background-color: #1c1b1f !important;
+        }
+        @@media (min-width: 768px) {
+            .offcanvas-md.sidebar {
+                width: 260px;
+                flex: 0 0 260px;
+                position: sticky;
+                top: 0;
+                height: 100vh;
+            }
+        }
+
+        .sidebar .nav-pills {
+            --bs-nav-pills-link-active-bg: var(--bs-danger);
+            --bs-nav-link-color: rgba(255, 255, 255, .72);
+            --bs-nav-link-hover-color: #fff;
+        }
+        .sidebar .nav-link {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .6rem .85rem;
+            border-radius: .6rem;
+            font-weight: 500;
+        }
+        .sidebar .nav-link:not(.active):hover {
+            background-color: rgba(255, 255, 255, .08);
+        }
+        .sidebar .nav-link i { font-size: 1.1rem; }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+        }
+    </style>
 </head>
 <body class="bg-body-tertiary">
 
-    <div class="row g-0 min-vh-100">
+    <!-- Barra superior: solo en pantallas chicas -->
+    <header class="navbar navbar-dark bg-dark sticky-top d-md-none px-3" data-bs-theme="dark">
+        <a asp-controller="Dashboard" asp-action="Index"
+           class="navbar-brand fw-bold d-flex align-items-center gap-2 mb-0">
+            <i class="bi bi-pizza text-warning"></i> Massa Club
+        </a>
+        <button class="btn btn-outline-light" type="button"
+                data-bs-toggle="offcanvas" data-bs-target="#sidebar"
+                aria-controls="sidebar" aria-label="Abrir menú">
+            <i class="bi bi-list fs-5"></i>
+        </button>
+    </header>
 
-        <aside class="col-md-3 col-lg-2 bg-dark text-white p-3 d-flex flex-column">
-            <a asp-controller="Home" asp-action="Index"
-            class="h5 fw-bold text-white text-decoration-none d-flex align-items-center gap-2">
-                <i class="bi bi-pizza-fill text-warning"></i> Massa Club
-            </a>
+    <div class="d-flex">
 
-            <hr class="border-secondary" />
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="sidebar offcanvas-md offcanvas-start d-flex flex-column text-white p-3"
+               tabindex="-1" aria-label="Menú principal" data-bs-theme="dark">
 
-            <div class="mb-4">
-                <div class="small text-secondary">Sesión</div>
-                <div class="fw-semibold text-truncate">@User.Identity?.Name</div>
-                <span class="badge text-bg-danger mt-1">
-                    @(User.IsInRole("Admin") ? "Administrador" : "Cliente")
-                </span>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <a asp-controller="Dashboard" asp-action="Index"
+                   class="h5 fw-bold text-white text-decoration-none d-flex align-items-center gap-2 mb-0">
+                    <span class="bg-danger rounded-3 d-inline-flex align-items-center justify-content-center"
+                          style="width: 36px; height: 36px;">
+                        <i class="bi bi-pizza text-white"></i>
+                    </span>
+                    Massa Club
+                </a>
+                <button type="button" class="btn-close d-md-none"
+                        data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Cerrar"></button>
             </div>
 
-            <ul class="nav flex-column gap-1">
-                <li class="nav-item">
-                    <a asp-controller="Dashboard" asp-action="Index"
-                    class="nav-link text-white d-flex align-items-center gap-2 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active bg-danger rounded" : "")">
-                        <i class="bi bi-house-door"></i> Inicio
+            <!-- Usuario -->
+            <div class="d-flex align-items-center gap-3 p-2 rounded-3 mb-3" style="background-color: rgba(255,255,255,.06);">
+                <div class="avatar rounded-circle bg-warning text-dark fw-bold d-flex align-items-center justify-content-center">
+                    @inicial
+                </div>
+                <div class="min-w-0 overflow-hidden">
+                    <div class="fw-semibold text-truncate">@nombre</div>
+                    <div class="small text-white-50">@rolTexto</div>
+                </div>
+            </div>
+
+            <!-- Navegación -->
+            <nav class="nav nav-pills flex-column gap-1">
+                <a asp-controller="Dashboard" asp-action="Index"
+                   class="nav-link @(Activo("Dashboard") ? "active" : "")">
+                    <i class="bi bi-grid-1x2"></i> Inicio
+                </a>
+                <a asp-controller="Pedidos" asp-action="Crear"
+                   class="nav-link @(Activo("Pedidos", "Crear") ? "active" : "")">
+                    <i class="bi bi-basket"></i> Hacer pedido
+                </a>
+                <a asp-controller="Pedidos" asp-action="Index"
+                   class="nav-link @(Activo("Pedidos") && !Activo("Pedidos", "Crear") ? "active" : "")">
+                    <i class="bi bi-receipt"></i> Mis pedidos
+                </a>
+                <a asp-controller="Pizzas" asp-action="Index"
+                   class="nav-link @(Activo("Pizzas", "Index") ? "active" : "")">
+                    <i class="bi bi-book"></i> Menú
+                </a>
+            </nav>
+
+            @if (esAdmin)
+            {
+                <hr class="border-secondary my-3" />
+                <div class="small text-white-50 px-3 mb-2">Administración</div>
+
+                <nav class="nav nav-pills flex-column gap-1">
+                    <a asp-controller="Pizzas" asp-action="Gestion"
+                       class="nav-link @(Activo("Pizzas", "Gestion") || Activo("Pizzas", "Editar") ? "active" : "")">
+                        <i class="bi bi-sliders"></i> Gestionar pizzas
                     </a>
-                </li>
-
-                <li class="nav-item">
-                    <a asp-controller="Pizzas" asp-action="Index"
-                    class="nav-link text-white d-flex align-items-center gap-2 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Pizzas" ? "active bg-danger rounded" : "")">
-                        <i class="bi bi-pizza"></i> Pizzas
+                    <a asp-controller="Pizzas" asp-action="Crear"
+                       class="nav-link @(Activo("Pizzas", "Crear") ? "active" : "")">
+                        <i class="bi bi-plus-circle"></i> Nueva pizza
                     </a>
-                </li>
+                </nav>
+            }
 
-                <li class="nav-item">
-                    <a asp-controller="Pedidos" asp-action="Index"
-                    class="nav-link text-white d-flex align-items-center gap-2 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Pedidos" ? "active bg-danger rounded" : "")">
-                        <i class="bi bi-receipt"></i> Mis pedidos
-                    </a>
-                </li>
-
-                @if (User.IsInRole("Admin"))
-                {
-                    <li class="nav-item mt-3">
-                        <div class="text-secondary small px-3 mb-1">Administración</div>
-                    </li>
-
-                    <li class="nav-item">
-                        <a asp-controller="Pizzas" asp-action="Gestion"
-                        class="nav-link text-white d-flex align-items-center gap-2">
-                            <i class="bi bi-gear"></i> Gestionar pizzas
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a asp-controller="Pizzas" asp-action="Crear"
-                        class="nav-link text-white d-flex align-items-center gap-2">
-                            <i class="bi bi-plus-circle"></i> Nueva pizza
-                        </a>
-                    </li>
-                }
-            </ul>
-
-            <div class="mt-auto">
+            <!-- Cerrar sesión -->
+            <div class="mt-auto pt-3">
                 <form asp-controller="Account" asp-action="Logout" method="post">
-                    <button type="submit" class="btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2">
+                    <button type="submit"
+                            class="btn btn-outline-light w-100 d-flex align-items-center justify-content-center gap-2">
                         <i class="bi bi-box-arrow-right"></i> Cerrar sesión
                     </button>
                 </form>
             </div>
         </aside>
 
-        <main class="col-md-9 col-lg-10 p-4">
+        <!-- CONTENIDO -->
+        <main class="flex-grow-1 p-3 p-lg-4" style="min-width: 0;">
             @if (TempData["Exito"] is string exito)
             {
-                <div class="alert alert-success">@exito</div>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>@exito
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
             }
+            @if (TempData["Error"] is string error)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>@error
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            }
+
             @RenderBody()
         </main>
 

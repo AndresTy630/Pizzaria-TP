@@ -7,90 +7,152 @@
 
 <h2 class="fw-bold mb-4">Hacer pedido</h2>
 
-<form asp-action="Crear" method="post">
+<form asp-action="Crear" method="post" id="formPedido">
     <div asp-validation-summary="All" class="text-danger mb-3"></div>
+    <div id="errorCliente" class="alert alert-danger d-none"></div>
 
     <div class="row g-4">
 
-        <!-- IZQUIERDA: ENTREGA -->
-        <div class="col-xl-3 col-lg-4">
-            <div class="card shadow-sm border-0">
+        <!-- IZQUIERDA: ENTREGA + CATÁLOGO -->
+        <div class="col-xl-8">
+
+            <!-- ENTREGA -->
+            <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body">
-                    <h3 class="h5 fw-bold mb-3">Entrega</h3>
+                    <h3 class="h5 fw-bold mb-3"><i class="bi bi-geo-alt me-2 text-danger"></i>Entrega</h3>
 
-                    <div class="mb-3">
-                        <label asp-for="IdSucursal" class="form-label">Sucursal</label>
-                        <select asp-for="IdSucursal" id="sucursal" asp-items="Model.Sucursales" class="form-select">
-                            <option value="">Seleccioná una sucursal</option>
-                        </select>
-                        <span asp-validation-for="IdSucursal" class="text-danger small"></span>
+                    <div class="small text-muted mb-2">Sucursal</div>
+                    <div class="row g-2 mb-3">
+                        @foreach (var s in Model.Reparto)
+                        {
+                            <div class="col-md-6">
+                                <input type="radio" class="btn-check" name="IdSucursal" id="suc@(s.IdSucursal)"
+                                       value="@s.IdSucursal" @(Model.IdSucursal == s.IdSucursal ? "checked" : "") />
+                                <label class="opcion-sucursal w-100 p-3 rounded border bg-white" for="suc@(s.IdSucursal)">
+                                    <div class="fw-bold"><i class="bi bi-shop me-1"></i>@s.Direccion</div>
+                                    @if (s.Repartidores == 0)
+                                    {
+                                        <span class="badge text-bg-secondary mt-1">Solo retiro</span>
+                                    }
+                                    else if (s.Libres > 0)
+                                    {
+                                        <span class="badge text-bg-success mt-1">@s.Libres @(s.Libres == 1 ? "repartidor libre" : "repartidores libres")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge text-bg-warning mt-1">Repartidores ocupados</span>
+                                    }
+                                </label>
+                            </div>
+                        }
                     </div>
+                    <span asp-validation-for="IdSucursal" class="text-danger small"></span>
 
-                    <div class="mb-3">
-                        <label asp-for="TipoEntrega" class="form-label">Tipo de entrega</label>
-                        <select asp-for="TipoEntrega" id="tipoEntrega" class="form-select">
-                            <option value="1">Retiro en sucursal</option>
-                            <option value="2" id="opcionDelivery">Delivery</option>
-                        </select>
+                    <div class="small text-muted mb-2">Tipo de entrega</div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="TipoEntrega" id="tipoRetiro" value="1" />
+                            <label class="btn btn-outline-danger w-100 py-2" for="tipoRetiro">
+                                <i class="bi bi-bag me-1"></i> Retiro en sucursal
+                            </label>
+                        </div>
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="TipoEntrega" id="tipoDelivery" value="2" />
+                            <label class="btn btn-outline-danger w-100 py-2" for="tipoDelivery">
+                                <i class="bi bi-scooter me-1"></i> Delivery
+                            </label>
+                        </div>
                     </div>
 
                     <div id="avisoReparto" class="alert d-none py-2 small"></div>
 
-                    <div class="mb-3" id="bloqueDireccion">
-                        <label asp-for="DireccionEntrega" class="form-label">Dirección de entrega</label>
-                        <input asp-for="DireccionEntrega" class="form-control" />
+                    <div id="bloqueDireccion">
+                        <label asp-for="DireccionEntrega" class="form-label small text-muted">Dirección de entrega</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-house-door"></i></span>
+                            <input asp-for="DireccionEntrega" class="form-control" maxlength="150" placeholder="Calle, número, piso/depto" />
+                            @if (!string.IsNullOrWhiteSpace(Model.DireccionEntrega))
+                            {
+                                <button type="button" class="btn btn-outline-secondary" id="usarGuardada"
+                                        data-dir="@Model.DireccionEntrega">Usar mi dirección</button>
+                            }
+                        </div>
                         <span asp-validation-for="DireccionEntrega" class="text-danger small"></span>
                     </div>
-
-                    <button type="submit" class="btn btn-danger w-100">Confirmar pedido</button>
                 </div>
             </div>
-        </div>
 
-        <!-- CENTRO: PIZZAS -->
-        <div class="col-xl-5 col-lg-8">
+            <!-- CATÁLOGO -->
             <div class="card shadow-sm border-0">
                 <div class="card-body">
-                    <h3 class="h5 fw-bold mb-3">Elegí tus pizzas</h3>
+                    <h3 class="h5 fw-bold mb-3"><i class="bi bi-pizza me-2 text-danger"></i>Elegí tus pizzas</h3>
 
-                    @for (int i = 0; i < Model.Lineas.Count; i++)
-                    {
-                        <div class="d-flex align-items-center justify-content-between border-bottom py-3">
-                            <div class="me-3">
-                                <input type="hidden" asp-for="Lineas[i].IdPizza" />
-                                <div class="fw-bold">@Model.Lineas[i].Nombre</div>
-                                <div class="small text-muted">@Model.Lineas[i].Descripcion</div>
-                                <div class="fw-bold">$@Model.Lineas[i].Precio.ToString("N2")</div>
+                    <!-- Selección actual -->
+                    <div id="seleccion" class="d-none mb-3 p-2 rounded bg-danger-subtle">
+                        <div class="small fw-bold text-danger mb-1">Tu selección</div>
+                        <div id="chips" class="d-flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <!-- Filtros -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-md-8">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="search" id="buscar" class="form-control" placeholder="Buscar pizza..." />
                             </div>
-                            <input asp-for="Lineas[i].Cantidad" type="number" min="0" max="50"
-                                   class="form-control cantidad" style="width: 90px;" />
                         </div>
-                    }
+                        <div class="col-12 col-md-4">
+                            <select id="orden" class="form-select">
+                                <option value="nombre">A-Z</option>
+                                <option value="precio_asc">Más barata</option>
+                                <option value="precio_desc">Más cara</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="small text-muted mb-2" id="conteo"></div>
+                    <div id="lista"></div>
+                    <div class="text-center mt-3">
+                        <button type="button" id="verMas" class="btn btn-outline-secondary d-none">Ver más</button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- DERECHA: TICKET -->
-        <div class="col-xl-4 col-lg-12">
+        <div class="col-xl-4">
             <div class="position-sticky" style="top: 1rem;">
                 <div id="ticket" class="bg-white shadow p-4"
                      style="font-family: 'Courier New', monospace; font-size: .9rem; border-top: 6px dashed #dee2e6; border-bottom: 6px dashed #dee2e6;">
                     <div class="text-center fw-bold">🍕 PIZZA MASSA CLUB</div>
-                    <div class="text-center small text-muted">Tu pedido</div>
+                    <div class="text-center small text-muted" id="tFecha"></div>
                     <hr style="border-top: 1px dashed #6c757d; opacity: 1;" />
 
-                    <div id="ticketVacio" class="text-center text-muted py-3">
-                        Todavía no agregaste pizzas.
+                    <div class="small mb-2">
+                        <div><strong>Sucursal:</strong> <span id="tSucursal">—</span></div>
+                        <div><strong>Entrega:</strong> <span id="tTipo">Retiro en sucursal</span></div>
+                        <div id="tDirFila" class="d-none"><strong>Dirección:</strong> <span id="tDir"></span></div>
                     </div>
+                    <hr style="border-top: 1px dashed #6c757d; opacity: 1;" />
 
+                    <div id="ticketVacio" class="text-center text-muted py-3">Todavía no agregaste pizzas.</div>
                     <div id="ticketLineas"></div>
 
                     <div id="ticketTotales" class="d-none">
                         <hr style="border-top: 2px double #6c757d; opacity: 1;" />
+                        <div class="d-flex justify-content-between small">
+                            <span>Unidades</span><span id="tUnidades"></span>
+                        </div>
                         <div class="d-flex justify-content-between fw-bold fs-5">
                             <span>TOTAL</span><span id="tTotal"></span>
                         </div>
                     </div>
+                </div>
+
+                <div class="mt-3">
+                    <button type="submit" id="btnConfirmar" class="btn btn-danger w-100" disabled>
+                        Confirmar pedido
+                    </button>
                 </div>
             </div>
         </div>
@@ -98,85 +160,206 @@
     </div>
 </form>
 
+<style>
+    .opcion-sucursal { cursor: pointer; transition: .15s; }
+    .btn-check:checked + .opcion-sucursal { border-color: #dc3545 !important; background: #fff5f5 !important; box-shadow: 0 0 0 2px rgba(220,53,69,.25); }
+    .fila-pizza { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem 0; border-bottom: 1px solid #eee; }
+    .fila-pizza.elegida { background: #fff8f8; }
+    .qty button { width: 32px; height: 32px; padding: 0; }
+    .qty span { display: inline-block; min-width: 32px; text-align: center; font-weight: bold; }
+    #ticket { overflow-wrap: anywhere; word-break: break-word; }
+    #ticket .d-flex > span:first-child { min-width: 0; }
+</style>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        const pizzas = @Json.Serialize(Model.Lineas);
+        const pizzas  = @Json.Serialize(Model.Lineas);
         const reparto = @Json.Serialize(Model.Reparto);
+        const tipoInicial = @((int)Model.TipoEntrega);
+        const POR_PAGINA = 12;
 
-        // ---------- ENTREGA ----------
-        const selSucursal = document.getElementById('sucursal');
-        const selTipo = document.getElementById('tipoEntrega');
-        const opcionDelivery = document.getElementById('opcionDelivery');
-        const bloque = document.getElementById('bloqueDireccion');
-        const aviso = document.getElementById('avisoReparto');
+        const byId = new Map(pizzas.map(p => [p.idPizza, p]));
+        const sel  = new Map();                       // idPizza -> cantidad
+        pizzas.forEach(p => { if (p.cantidad > 0) sel.set(p.idPizza, p.cantidad); });
 
-        function mostrarAviso(clase, texto) {
-            aviso.className = 'alert py-2 small alert-' + clase;
-            aviso.textContent = texto;
+        let pagina = 1;
+
+        const $ = id => document.getElementById(id);
+        const plata = n => n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+        const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+        // ---------- SELECCIÓN ----------
+        function cambiar(id, delta) {
+            const nueva = Math.max(0, Math.min(50, (sel.get(id) || 0) + delta));
+            if (nueva === 0) sel.delete(id); else sel.set(id, nueva);
+            renderTodo();
         }
 
-        function actualizarEntrega() {
-            const s = reparto.find(x => String(x.idSucursal) === selSucursal.value);
+        // ---------- CATÁLOGO ----------
+        function filtradas() {
+            const q = norm($('buscar').value.trim());
+            let r = pizzas.filter(p =>
+                !sel.has(p.idPizza) &&
+                (!q || norm(p.nombre).includes(q) || norm(p.descripcion).includes(q)));
 
-            opcionDelivery.disabled = false;
-            aviso.className = 'alert d-none';
-
-            if (s) {
-                if (s.repartidores === 0) {
-                    opcionDelivery.disabled = true;
-                    if (selTipo.value === '2') selTipo.value = '1';
-                    mostrarAviso('danger', 'Esta sucursal no tiene repartidores: solo podés retirar en el local.');
-                } else if (s.libres > 0) {
-                    mostrarAviso('success', s.libres + (s.libres === 1 ? ' repartidor disponible' : ' repartidores disponibles') + ' en esta sucursal.');
-                } else {
-                    mostrarAviso('warning', 'Todos los repartidores están ocupados. Podés pedir igual: se asignará cuando alguno se libere.');
-                }
-            }
-
-            bloque.style.display = selTipo.value === '2' ? 'block' : 'none';
+            const o = $('orden').value;
+            if (o === 'precio_asc')  r.sort((a, b) => a.precio - b.precio);
+            else if (o === 'precio_desc') r.sort((a, b) => b.precio - a.precio);
+            else r.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+            return r;
         }
 
-        selSucursal.addEventListener('change', actualizarEntrega);
-        selTipo.addEventListener('change', actualizarEntrega);
-        actualizarEntrega();
+        function renderLista() {
+            const todas = filtradas();
+            const visibles = todas.slice(0, pagina * POR_PAGINA);
+
+            $('conteo').textContent = todas.length + (todas.length === 1 ? ' pizza disponible' : ' pizzas disponibles');
+
+            $('lista').innerHTML = visibles.length === 0
+                ? `<div class="text-center text-muted py-4">${
+                    sel.size === pizzas.length ? 'Ya agregaste todas las pizzas.' : 'No hay pizzas con esos filtros.'}</div>`
+                : visibles.map(p => `
+                    <div class="fila-pizza">
+                        <div class="me-2">
+                            <div class="fw-bold">${esc(p.nombre)}</div>
+                            <div class="small text-muted">${esc(p.descripcion)}</div>
+                            <div class="fw-bold text-danger">${plata(p.precio)}</div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-danger" data-id="${p.idPizza}" data-d="1">Agregar</button>
+                    </div>`).join('');
+
+            $('verMas').classList.toggle('d-none', visibles.length >= todas.length);
+        }
+
+        function renderChips() {
+            $('seleccion').classList.toggle('d-none', sel.size === 0);
+            $('chips').innerHTML = [...sel].map(([id, c]) =>
+                `<span class="badge text-bg-danger d-inline-flex align-items-center gap-2 py-2">
+                    ${esc(byId.get(id).nombre)} × ${c}
+                    <button type="button" class="btn-close btn-close-white" style="font-size:.6rem" data-id="${id}" data-d="-50" aria-label="Quitar"></button>
+                 </span>`).join('');
+        }
 
         // ---------- TICKET ----------
-        const inputs = document.querySelectorAll('input.cantidad');
-        const $lineas = document.getElementById('ticketLineas');
-        const $vacio = document.getElementById('ticketVacio');
-        const $totales = document.getElementById('ticketTotales');
+        function sucursalActual() {
+            const r = document.querySelector('input[name="IdSucursal"]:checked');
+            return r ? reparto.find(s => String(s.idSucursal) === r.value) : null;
+        }
+        function tipoActual() { return document.querySelector('input[name="TipoEntrega"]:checked').value; }
 
-        const plata = n => n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
-
-        function actualizarTicket() {
-            let total = 0, html = '';
-
-            inputs.forEach((input, i) => {
-                const cant = Math.max(0, Math.min(50, parseInt(input.value) || 0));
-                if (cant === 0) return;
-
-                const p = pizzas[i];
-                const bruto = p.precio * cant;
-                total += bruto;
-
+        function renderTicket() {
+            let total = 0, unidades = 0, html = '';
+            sel.forEach((c, id) => {
+                const p = byId.get(id);
+                total += p.precio * c; unidades += c;
                 html += `<div class="mb-2">
-                    <div class="fw-bold">${p.nombre}</div>
-                    <div class="d-flex justify-content-between">
-                        <span>${cant} x ${plata(p.precio)}</span><span>${plata(bruto)}</span>
+                    <div class="fw-bold">${esc(p.nombre)}</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>${c} x ${plata(p.precio)}</span>
+                        <span>${plata(p.precio * c)}</span>
+                    </div>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-0" data-id="${id}" data-d="-1">−</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-0" data-id="${id}" data-d="1" ${c >= 50 ? 'disabled' : ''}>+</button>
+                        <button type="button" class="btn btn-sm btn-link text-danger py-0" data-id="${id}" data-d="-50">quitar</button>
                     </div>
                 </div>`;
             });
 
-            $lineas.innerHTML = html;
-            const hay = html !== '';
-            $vacio.classList.toggle('d-none', hay);
-            $totales.classList.toggle('d-none', !hay);
+            $('ticketLineas').innerHTML = html;
+            const hay = sel.size > 0;
+            $('ticketVacio').classList.toggle('d-none', hay);
+            $('ticketTotales').classList.toggle('d-none', !hay);
+            $('tUnidades').textContent = unidades;
+            $('tTotal').textContent = plata(total);
+            $('btnConfirmar').disabled = !hay;
 
-            document.getElementById('tTotal').textContent = plata(total);
+            const s = sucursalActual();
+            $('tSucursal').textContent = s ? s.direccion : '—';
+            const delivery = tipoActual() === '2';
+            $('tTipo').textContent = delivery ? 'Delivery' : 'Retiro en sucursal';
+            $('tDirFila').classList.toggle('d-none', !delivery);
+            $('tDir').textContent = $('DireccionEntrega').value || '—';
+            $('tFecha').textContent = new Date().toLocaleString('es-AR');
         }
 
-        inputs.forEach(i => i.addEventListener('input', actualizarTicket));
-        actualizarTicket();
+        // ---------- ENTREGA ----------
+        function actualizarEntrega() {
+            const s = sucursalActual();
+            const aviso = $('avisoReparto');
+            const radioDelivery = $('tipoDelivery');
+
+            radioDelivery.disabled = false;
+            aviso.className = 'alert d-none';
+
+            if (s) {
+                const msg = (clase, texto) => { aviso.className = 'alert py-2 small alert-' + clase; aviso.textContent = texto; };
+                if (s.repartidores === 0) {
+                    radioDelivery.disabled = true;
+                    $('tipoRetiro').checked = true;
+                    msg('danger', 'Esta sucursal no tiene repartidores: solo podés retirar en el local.');
+                } else if (tipoActual() === '2') {
+                    if (s.libres > 0) msg('success', s.libres + (s.libres === 1 ? ' repartidor disponible' : ' repartidores disponibles') + ' en esta sucursal.');
+                    else msg('warning', 'Todos los repartidores están ocupados. Podés pedir igual: se asignará cuando alguno se libere.');
+                }
+            }
+            $('bloqueDireccion').style.display = tipoActual() === '2' ? 'block' : 'none';
+            renderTicket();
+        }
+
+        function renderTodo() { renderLista(); renderChips(); renderTicket(); }
+
+        // ---------- EVENTOS ----------
+        document.addEventListener('click', e => {
+            const b = e.target.closest('button[data-id]');
+            if (b) cambiar(parseInt(b.dataset.id), parseInt(b.dataset.d));
+        });
+
+        $('buscar').addEventListener('input', () => { pagina = 1; renderLista(); });
+        $('orden').addEventListener('change', () => { pagina = 1; renderLista(); });
+        $('verMas').addEventListener('click', () => { pagina++; renderLista(); });
+
+        document.querySelectorAll('input[name="IdSucursal"], input[name="TipoEntrega"]')
+            .forEach(r => r.addEventListener('change', actualizarEntrega));
+        $('DireccionEntrega').addEventListener('input', renderTicket);
+
+        const usar = $('usarGuardada');
+        if (usar) usar.addEventListener('click', () => { $('DireccionEntrega').value = usar.dataset.dir; renderTicket(); });
+
+        // Al enviar: solo viajan las pizzas elegidas
+        $('formPedido').addEventListener('submit', e => {
+            const err = $('errorCliente');
+            const problemas = [];
+            if (sel.size === 0) problemas.push('Elegí al menos una pizza.');
+            if (!sucursalActual()) problemas.push('Elegí una sucursal.');
+            if (tipoActual() === '2' && !$('DireccionEntrega').value.trim()) problemas.push('Ingresá la dirección de entrega.');
+
+            if (problemas.length) {
+                e.preventDefault();
+                err.innerHTML = problemas.join('<br>');
+                err.classList.remove('d-none');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            document.querySelectorAll('.linea-dinamica').forEach(x => x.remove());
+            let i = 0;
+            sel.forEach((cant, id) => {
+                [['IdPizza', id], ['Cantidad', cant]].forEach(([campo, valor]) => {
+                    const h = document.createElement('input');
+                    h.type = 'hidden'; h.className = 'linea-dinamica';
+                    h.name = `Lineas[${i}].${campo}`; h.value = valor;
+                    $('formPedido').appendChild(h);
+                });
+                i++;
+            });
+        });
+
+        // ---------- INICIO ----------
+        (tipoInicial === 2 ? $('tipoDelivery') : $('tipoRetiro')).checked = true;
+        renderTodo();
+        actualizarEntrega();
     </script>
 }
