@@ -1,4 +1,4 @@
-Pizzeria.Mvc.Models;
+namespace Pizzeria.Mvc.Models;
 
 public class PizzaViewModel
 {
