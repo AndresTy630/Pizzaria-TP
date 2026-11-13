@@ -1,53 +1,181 @@
-﻿@model IEnumerable<PizzaViewModel>
+﻿
+@model IEnumerable<PizzaViewModel>
+@using Pizzeria.Dominio.Entidades
 
 @{
-    ViewData["Title"] = "Inicio";
+    Layout = "_LandingLayout";
+    ViewData["Title"] = "Amore a prima pizza";
 }
 
-<!-- INICIO -->
-<section class="bg-warning-subtle text-center py-5">
-    <div class="container py-4">
-        <img src="~/images/logo.png" alt="Logo de la pizzería"
-             class="img-fluid" width="400" height="240">
+<!-- HERO -->
+<section class="hero" id="inicio">
 
-        <h1 class="display-4 fw-bold">La mejor pizza de la ciudad</h1>
-        <p class="lead">Pizzas caseras, ingredientes frescos y mucho sabor.</p>
-        <a href="#menu" class="btn btn-danger btn-lg mt-3">Ver menú</a>
+    <div class="hero-slide active" style="background-image: url('/img/hero-1.jpg')"></div>
+    <div class="hero-slide" style="background-image: url('/img/hero-2.jpg')"></div>
+    <div class="hero-slide" style="background-image: url('/img/hero-3.jpg')"></div>
+
+    <div class="hero-content">
+
+        <span>EL SABOR NOS UNE</span>
+
+        <h1>
+            AMAMOS<br />
+            LA <strong>PIZZA.</strong>
+        </h1>
+
+        <p>
+            Ingredientes frescos, recetas irresistibles
+            y mucho amor en cada porción.
+        </p>
+
+        <a href="#menu" class="main-button">
+            CONOCÉ NUESTRO MENÚ
+        </a>
+
     </div>
+
 </section>
 
+
+<!-- FRANJA -->
+<section class="red-strip">
+    <h2>BUEN SABOR · BUENOS MOMENTOS · AMAMOS LA PIZZA</h2>
+</section>
+
+
 <!-- MENÚ -->
-<section id="menu" class="container my-5">
-    <h2 class="text-center fw-bold mb-5">Nuestras pizzas</h2>
+<section class="menu-section" id="menu">
+
+    <div class="section-title">
+        <span>NUESTRAS ESPECIALIDADES</span>
+        <h2>LA PIZZA ES <strong>PROTAGONISTA.</strong></h2>
+        <p>Descubrí nuestras variedades y elegí tu favorita.</p>
+    </div>
 
     @if (!Model.Any())
     {
-        <div class="alert alert-info text-center">Por ahora no hay pizzas disponibles.</div>
+        <p class="text-center">Por ahora no hay pizzas disponibles.</p>
+    }
+    else
+    {
+        <div class="pizza-grid">
+
+            @foreach (var pizza in Model)
+            {
+                <article class="pizza-card">
+
+                    <img src="@Url.Content("~/img/pizzas/pizza-" + pizza.IdPizza + ".jpg")"
+                         alt="@pizza.Nombre" />
+
+                    <div class="pizza-info">
+                        <h3>@pizza.Nombre</h3>
+                        <p>@pizza.Descripcion</p>
+                        <strong>$@pizza.Precio.ToString("N2")</strong>
+                    </div>
+
+                </article>
+            }
+
+        </div>
     }
 
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        @foreach (var pizza in Model)
+</section>
+
+
+<!-- SUCURSALES -->
+<section class="sucursales-section" id="sucursales">
+    <div class="container">
+
+        <div class="section-heading">
+            <span class="section-tag">ESTAMOS CERCA TUYO</span>
+            <h2>NUESTRAS <span>SUCURSALES</span></h2>
+            <p>Encontrá tu sucursal más cercana y disfrutá de nuestras pizzas.</p>
+        </div>
+
+        @{
+            var sucursales = ViewBag.Sucursales as List<SucursalReparto>;
+        }
+
+        @if (sucursales != null && sucursales.Any())
         {
-            <div class="col">
-                <div class="card h-100 text-center shadow-sm">
-                    <div class="card-body p-4 d-flex flex-column">
-                        <h3 class="h5 fw-bold">@pizza.Nombre</h3>
-                        <p class="card-text">@pizza.Descripcion</p>
-                        <h4 class="fw-bold text-danger mt-auto">$@pizza.Precio.ToString("N2")</h4>
-                        <a asp-controller="Account" asp-action="Login" class="btn btn-danger mt-3">Pedir</a>
+            <div class="row g-4">
+
+                @foreach (var sucursal in sucursales)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <article class="sucursal-card">
+
+                            <div class="sucursal-card-top">
+                                <span class="sucursal-number">
+                                    SUCURSAL @sucursal.IdSucursal
+                                </span>
+
+                                <i class="bi bi-shop"></i>
+                            </div>
+
+                            <div class="sucursal-card-body">
+                                <h3>@sucursal.Direccion</h3>
+
+                                <div class="sucursal-info">
+                                    <i class="bi bi-bicycle"></i>
+
+                                    <span>
+                                        @sucursal.Repartidores
+                                        @(sucursal.Repartidores == 1
+                                            ? "repartidor"
+                                            : "repartidores")
+                                    </span>
+                                </div>
+
+                                <div class="sucursal-info">
+                                    <i class="bi bi-check-circle"></i>
+
+                                    <span>
+                                        @sucursal.Libres
+                                        @(sucursal.Libres == 1
+                                            ? "disponible"
+                                            : "disponibles")
+                                    </span>
+                                </div>
+                            </div>
+
+                        </article>
                     </div>
-                </div>
+                }
+
             </div>
         }
+        else
+        {
+            <p class="text-center">No hay sucursales disponibles.</p>
+        }
+
     </div>
 </section>
 
-<!-- CONTACTO -->
-<section id="contacto" class="bg-body-tertiary py-5">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-4">Contacto</h2>
-        <p class="mb-1">📍 Av. Corrientes 1234, CABA</p>
-        <p class="mb-1">📞 011-4567-8901</p>
-        <p class="mb-0">✉️ contacto@pizzeria.com</p>
+
+<!-- NOSOTROS -->
+<section class="about-section" id="nosotros">
+
+    <div class="about-image">
+        <img src="~/img/nosotros.jpg" alt="Preparación de nuestras pizzas" />
     </div>
+
+    <div class="about-content">
+
+        <span>NUESTRA ESENCIA</span>
+
+        <h2>
+            UNA PASIÓN<br />
+            POR LA <strong>PIZZA.</strong>
+        </h2>
+
+        <p>
+            Para nosotros, una pizza es mucho más que una comida.
+            Es compartir con amigos, disfrutar en familia y crear
+            buenos momentos alrededor de la mesa.
+        </p>
+
+    </div>
+
 </section>

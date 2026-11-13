@@ -22,30 +22,31 @@
                     <h3 class="h5 fw-bold mb-3"><i class="bi bi-geo-alt me-2 text-danger"></i>Entrega</h3>
 
                     <div class="small text-muted mb-2">Sucursal</div>
-                    <div class="row g-2 mb-3">
-                        @foreach (var s in Model.Reparto)
-                        {
-                            <div class="col-md-6">
-                                <input type="radio" class="btn-check" name="IdSucursal" id="suc@(s.IdSucursal)"
-                                       value="@s.IdSucursal" @(Model.IdSucursal == s.IdSucursal ? "checked" : "") />
-                                <label class="opcion-sucursal w-100 p-3 rounded border bg-white" for="suc@(s.IdSucursal)">
-                                    <div class="fw-bold"><i class="bi bi-shop me-1"></i>@s.Direccion</div>
-                                    @if (s.Repartidores == 0)
-                                    {
-                                        <span class="badge text-bg-secondary mt-1">Solo retiro</span>
-                                    }
-                                    else if (s.Libres > 0)
-                                    {
-                                        <span class="badge text-bg-success mt-1">@s.Libres @(s.Libres == 1 ? "repartidor libre" : "repartidores libres")</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge text-bg-warning mt-1">Repartidores ocupados</span>
-                                    }
-                                </label>
+                    <input type="hidden" name="IdSucursal" id="IdSucursal" value="@Model.IdSucursal" />
+
+                    <div class="row g-2 mb-2">
+                        <div class="col-12 col-md-7">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="search" id="buscarSuc" class="form-control" placeholder="Buscar por dirección..." />
                             </div>
-                        }
+                        </div>
+                        <div class="col-12 col-md-5">
+                            <select id="filtroSuc" class="form-select form-select-sm">
+                                <option value="todas">Todas las sucursales</option>
+                                <option value="delivery">Con repartidores</option>
+                                <option value="libres">Con repartidor libre</option>
+                            </select>
+                        </div>
                     </div>
+
+                    <div id="sucElegida" class="alert alert-success py-2 small d-none mb-2">
+                        <i class="bi bi-check-circle me-1"></i> Sucursal elegida: <strong id="sucElegidaTxt"></strong>
+                    </div>
+
+                    <div class="small text-muted mb-2" id="conteoSuc"></div>
+                    <div id="listaSuc" class="d-grid gap-2 mb-2"></div>
+                    <div id="pagSuc" class="mb-3"></div>
                     <span asp-validation-for="IdSucursal" class="text-danger small"></span>
 
                     <div class="small text-muted mb-2">Tipo de entrega</div>
@@ -112,9 +113,7 @@
 
                     <div class="small text-muted mb-2" id="conteo"></div>
                     <div id="lista"></div>
-                    <div class="text-center mt-3">
-                        <button type="button" id="verMas" class="btn btn-outline-secondary d-none">Ver más</button>
-                    </div>
+                    <div id="pagPizzas" class="mt-3"></div>
                 </div>
             </div>
         </div>
@@ -161,8 +160,8 @@
 </form>
 
 <style>
-    .opcion-sucursal { cursor: pointer; transition: .15s; }
-    .btn-check:checked + .opcion-sucursal { border-color: #dc3545 !important; background: #fff5f5 !important; box-shadow: 0 0 0 2px rgba(220,53,69,.25); }
+    .opcion-sucursal { text-align: left; cursor: pointer; transition: .15s; }
+    .opcion-sucursal.activa { border-color: #dc3545 !important; background: #fff5f5 !important; box-shadow: 0 0 0 2px rgba(220,53,69,.25); }
     .fila-pizza { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem 0; border-bottom: 1px solid #eee; }
     .fila-pizza.elegida { background: #fff8f8; }
     .qty button { width: 32px; height: 32px; padding: 0; }
@@ -177,13 +176,13 @@
         const pizzas  = @Json.Serialize(Model.Lineas);
         const reparto = @Json.Serialize(Model.Reparto);
         const tipoInicial = @((int)Model.TipoEntrega);
-        const POR_PAGINA = 12;
+        const POR_PAGINA = 5;
+        let pagPizzas = 1, pagSuc = 1;
+        let sucId = @Json.Serialize(Model.IdSucursal);
 
         const byId = new Map(pizzas.map(p => [p.idPizza, p]));
         const sel  = new Map();                       // idPizza -> cantidad
         pizzas.forEach(p => { if (p.cantidad > 0) sel.set(p.idPizza, p.cantidad); });
-
-        let pagina = 1;
 
         const $ = id => document.getElementById(id);
         const plata = n => n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
@@ -195,6 +194,34 @@
             const nueva = Math.max(0, Math.min(50, (sel.get(id) || 0) + delta));
             if (nueva === 0) sel.delete(id); else sel.set(id, nueva);
             renderTodo();
+        }
+
+        // ---------- PAGINACIÓN ----------
+        function paginador(el, actual, total, cambiar) {
+            if (total <= 1) { el.innerHTML = ''; el.onclick = null; return; }
+
+            const nums = [...new Set([1, total, actual - 1, actual, actual + 1]
+                .filter(n => n >= 1 && n <= total))].sort((a, b) => a - b);
+
+            const item = (p, txt, activo, deshabilitado) =>
+                `<li class="page-item ${activo ? 'active' : ''} ${deshabilitado ? 'disabled' : ''}">
+                    <button type="button" class="page-link" data-p="${p}">${txt}</button></li>`;
+
+            let html = '<ul class="pagination pagination-sm justify-content-center mb-0">';
+            html += item(actual - 1, '‹', false, actual === 1);
+            let previo = 0;
+            nums.forEach(n => {
+                if (n - previo > 1) html += '<li class="page-item disabled"><span class="page-link">…</span></li>';
+                html += item(n, n, n === actual, false);
+                previo = n;
+            });
+            html += item(actual + 1, '›', false, actual === total);
+            el.innerHTML = html + '</ul>';
+
+            el.onclick = e => {
+                const b = e.target.closest('button[data-p]');
+                if (b && !b.parentElement.classList.contains('disabled')) cambiar(parseInt(b.dataset.p));
+            };
         }
 
         // ---------- CATÁLOGO ----------
@@ -213,7 +240,9 @@
 
         function renderLista() {
             const todas = filtradas();
-            const visibles = todas.slice(0, pagina * POR_PAGINA);
+            const paginas = Math.max(1, Math.ceil(todas.length / POR_PAGINA));
+            pagPizzas = Math.min(pagPizzas, paginas);
+            const visibles = todas.slice((pagPizzas - 1) * POR_PAGINA, pagPizzas * POR_PAGINA);
 
             $('conteo').textContent = todas.length + (todas.length === 1 ? ' pizza disponible' : ' pizzas disponibles');
 
@@ -230,7 +259,7 @@
                         <button type="button" class="btn btn-sm btn-danger" data-id="${p.idPizza}" data-d="1">Agregar</button>
                     </div>`).join('');
 
-            $('verMas').classList.toggle('d-none', visibles.length >= todas.length);
+            paginador($('pagPizzas'), pagPizzas, paginas, p => { pagPizzas = p; renderLista(); });
         }
 
         function renderChips() {
@@ -243,9 +272,46 @@
         }
 
         // ---------- TICKET ----------
+        function sucFiltradas() {
+            const q = norm($('buscarSuc').value.trim());
+            const f = $('filtroSuc').value;
+            return reparto
+                .filter(s => (!q || norm(s.direccion).includes(q)) &&
+                    (f === 'todas' || (f === 'delivery' && s.repartidores > 0) || (f === 'libres' && s.libres > 0)))
+                .sort((a, b) => a.direccion.localeCompare(b.direccion, 'es'));
+        }
+
+        function renderSucursales() {
+            const todas = sucFiltradas();
+            const paginas = Math.max(1, Math.ceil(todas.length / POR_PAGINA));
+            pagSuc = Math.min(pagSuc, paginas);
+            const visibles = todas.slice((pagSuc - 1) * POR_PAGINA, pagSuc * POR_PAGINA);
+
+            $('conteoSuc').textContent = todas.length + (todas.length === 1 ? ' sucursal' : ' sucursales');
+
+            $('listaSuc').innerHTML = visibles.length === 0
+                ? '<div class="text-center text-muted py-3">No hay sucursales con esos filtros.</div>'
+                : visibles.map(s => {
+                    const activa = String(s.idSucursal) === String(sucId);
+                    const badge = s.repartidores === 0
+                        ? '<span class="badge text-bg-secondary">Solo retiro</span>'
+                        : s.libres > 0
+                            ? `<span class="badge text-bg-success">${s.libres} ${s.libres === 1 ? 'repartidor libre' : 'repartidores libres'}</span>`
+                            : '<span class="badge text-bg-warning">Repartidores ocupados</span>';
+                    return `<button type="button" class="opcion-sucursal ${activa ? 'activa' : ''} w-100 p-2 rounded border bg-white d-flex justify-content-between align-items-center gap-2" data-suc="${s.idSucursal}">
+                        <span class="fw-bold"><i class="bi bi-shop me-1"></i>${esc(s.direccion)}</span>${badge}
+                    </button>`;
+                }).join('');
+
+            const elegida = sucursalActual();
+            $('sucElegida').classList.toggle('d-none', !elegida);
+            if (elegida) $('sucElegidaTxt').textContent = elegida.direccion;
+
+            paginador($('pagSuc'), pagSuc, paginas, p => { pagSuc = p; renderSucursales(); });
+        }
+
         function sucursalActual() {
-            const r = document.querySelector('input[name="IdSucursal"]:checked');
-            return r ? reparto.find(s => String(s.idSucursal) === r.value) : null;
+            return reparto.find(s => String(s.idSucursal) === String(sucId)) || null;
         }
         function tipoActual() { return document.querySelector('input[name="TipoEntrega"]:checked').value; }
 
@@ -317,12 +383,23 @@
             if (b) cambiar(parseInt(b.dataset.id), parseInt(b.dataset.d));
         });
 
-        $('buscar').addEventListener('input', () => { pagina = 1; renderLista(); });
-        $('orden').addEventListener('change', () => { pagina = 1; renderLista(); });
-        $('verMas').addEventListener('click', () => { pagina++; renderLista(); });
+        $('buscar').addEventListener('input', () => { pagPizzas = 1; renderLista(); });
+        $('orden').addEventListener('change', () => { pagPizzas = 1; renderLista(); });
 
-        document.querySelectorAll('input[name="IdSucursal"], input[name="TipoEntrega"]')
+        document.querySelectorAll('input[name="TipoEntrega"]')
             .forEach(r => r.addEventListener('change', actualizarEntrega));
+
+        $('buscarSuc').addEventListener('input', () => { pagSuc = 1; renderSucursales(); });
+        $('filtroSuc').addEventListener('change', () => { pagSuc = 1; renderSucursales(); });
+
+        $('listaSuc').addEventListener('click', e => {
+            const b = e.target.closest('button[data-suc]');
+            if (!b) return;
+            sucId = parseInt(b.dataset.suc);
+            $('IdSucursal').value = sucId;
+            renderSucursales();
+            actualizarEntrega();
+        });
         $('DireccionEntrega').addEventListener('input', renderTicket);
 
         const usar = $('usarGuardada');
@@ -360,6 +437,7 @@
         // ---------- INICIO ----------
         (tipoInicial === 2 ? $('tipoDelivery') : $('tipoRetiro')).checked = true;
         renderTodo();
+        renderSucursales();
         actualizarEntrega();
     </script>
 }

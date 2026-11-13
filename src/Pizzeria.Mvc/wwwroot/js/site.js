@@ -1,4 +1,45 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿document.addEventListener("DOMContentLoaded", function () {
+  // MENÚ RESPONSIVE
+  const navToggle = document.getElementById("navToggle");
+  const navLinks = document.getElementById("navLinks");
 
-// Write your JavaScript code.
+  if (navToggle && navLinks) {
+    navToggle.addEventListener("click", function () {
+      navLinks.classList.toggle("show");
+    });
+
+    const enlaces = navLinks.querySelectorAll("a");
+
+    enlaces.forEach(function (enlace) {
+      enlace.addEventListener("click", function () {
+        navLinks.classList.remove("show");
+      });
+    });
+  }
+
+  // CARRUSEL AUTOMÁTICO
+  const slides = document.querySelectorAll(".hero-slide");
+  const slideNumber = document.getElementById("slideNumber");
+
+  if (slides.length > 0) {
+    let actual = 0;
+
+    function cambiarSlide() {
+      slides[actual].classList.remove("active");
+
+      actual++;
+
+      if (actual >= slides.length) {
+        actual = 0;
+      }
+
+      slides[actual].classList.add("active");
+
+      if (slideNumber) {
+        slideNumber.textContent = String(actual + 1).padStart(2, "0");
+      }
+    }
+
+    setInterval(cambiarSlide, 5500);
+  }
+});
