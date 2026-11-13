@@ -11,36 +11,18 @@ public static class PedidoEndpoints
     {
         var grupo = app.MapGroup("/api/pedidos").WithTags("Gestión de Pedidos");
 
-        grupo.MapPost("/", async (CrearPedidoDto request, IPedidoService pedidoService, IPizzaRepository pizzaRepo) =>
+        grupo.MapPost("/", async (CrearPedidoDto request, IPedidoService pedidoService) =>
         {
             try
             {
-                var nuevoPedido = new Pedido
-                {
-                    IdUsuario = request.IdUsuario,
-                    IdSucursal = request.IdSucursal,
-                    TipoEntrega = request.TipoEntrega,
-                    DireccionEntrega = request.DireccionEntrega
-                };
+                var lineas = request.Detalles.Select(d => new LineaPedido(d.IdPizza, d.Cantidad));
 
-                foreach (var item in request.Detalles)
-                {
-                    var pizza = await pizzaRepo.ObtenerPorIdAsync(item.IdPizza);
+                var id = await pedidoService.CrearPedidoAsync(
+                    request.IdUsuario, request.IdSucursal, request.TipoEntrega,
+                    request.DireccionEntrega, lineas);
 
-                    if (pizza == null || !pizza.Disponible)
-                        return Results.BadRequest(new { Error = $"La pizza con ID {item.IdPizza} no existe o no está disponible." });
-
-                    nuevoPedido.AgregarDetalle(new DetallePedido
-                    {
-                        IdPizza = item.IdPizza,
-                        Cantidad = item.Cantidad,
-                        PrecioUnitario = pizza.Precio
-                    });
-                }
-
-                var id = await pedidoService.CrearPedidoAsync(nuevoPedido);
-                return Results.Created($"/api/pedidos/{id}", new { IdPedido = id, Mensaje = "Pedido recibido, comenzando preparación."});
-
+                return Results.Created($"/api/pedidos/{id}",
+                    new { IdPedido = id, Mensaje = "Pedido recibido, comenzando preparación." });
             }
             catch (ArgumentException ex)
             {

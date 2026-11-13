@@ -16,6 +16,7 @@ builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPizzaRepository, PizzaRepository>();
 builder.Services.AddScoped<IEmpleadoRepository, EmpleadoRepository>();
+builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
 
 // Servicios
 builder.Services.AddScoped<IPedidoService, PedidoService>();
