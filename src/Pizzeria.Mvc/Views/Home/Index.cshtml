@@ -10,12 +10,14 @@
 <!-- HERO -->
 <section class="hero" id="inicio">
 
-    <div class="hero-slide active" style="background-image: url('/img/hero-1.jpg')"></div>
-    <div class="hero-slide" style="background-image: url('/img/hero-2.jpg')"></div>
-    <div class="hero-slide" style="background-image: url('/img/hero-3.jpg')"></div>
+    <div class="hero-track" id="heroTrack">
+        <div class="hero-slide" style="background-image: url('/images/hero-1.jpg')"></div>
+        <div class="hero-slide" style="background-image: url('/images/hero-2.jpg')"></div>
+        <div class="hero-slide" style="background-image: url('/images/hero-3.jpg')"></div>
+
+    </div>
 
     <div class="hero-content">
-
         <span>EL SABOR NOS UNE</span>
 
         <h1>
@@ -47,9 +49,9 @@
 <section class="menu-section" id="menu">
 
     <div class="section-title">
-        <span>NUESTRAS ESPECIALIDADES</span>
+        <span>ALGUNAS DE NUESTRAS ESPECIALIDADES</span>
         <h2>LA PIZZA ES <strong>PROTAGONISTA.</strong></h2>
-        <p>Descubrí nuestras variedades y elegí tu favorita.</p>
+        <p>Una pequeña muestra de lo que te espera. Cada visita, una selección distinta.</p>
     </div>
 
     @if (!Model.Any())
@@ -82,83 +84,11 @@
 </section>
 
 
-<!-- SUCURSALES -->
-<section class="sucursales-section" id="sucursales">
-    <div class="container">
-
-        <div class="section-heading">
-            <span class="section-tag">ESTAMOS CERCA TUYO</span>
-            <h2>NUESTRAS <span>SUCURSALES</span></h2>
-            <p>Encontrá tu sucursal más cercana y disfrutá de nuestras pizzas.</p>
-        </div>
-
-        @{
-            var sucursales = ViewBag.Sucursales as List<SucursalReparto>;
-        }
-
-        @if (sucursales != null && sucursales.Any())
-        {
-            <div class="row g-4">
-
-                @foreach (var sucursal in sucursales)
-                {
-                    <div class="col-md-6 col-lg-4">
-                        <article class="sucursal-card">
-
-                            <div class="sucursal-card-top">
-                                <span class="sucursal-number">
-                                    SUCURSAL @sucursal.IdSucursal
-                                </span>
-
-                                <i class="bi bi-shop"></i>
-                            </div>
-
-                            <div class="sucursal-card-body">
-                                <h3>@sucursal.Direccion</h3>
-
-                                <div class="sucursal-info">
-                                    <i class="bi bi-bicycle"></i>
-
-                                    <span>
-                                        @sucursal.Repartidores
-                                        @(sucursal.Repartidores == 1
-                                            ? "repartidor"
-                                            : "repartidores")
-                                    </span>
-                                </div>
-
-                                <div class="sucursal-info">
-                                    <i class="bi bi-check-circle"></i>
-
-                                    <span>
-                                        @sucursal.Libres
-                                        @(sucursal.Libres == 1
-                                            ? "disponible"
-                                            : "disponibles")
-                                    </span>
-                                </div>
-                            </div>
-
-                        </article>
-                    </div>
-                }
-
-            </div>
-        }
-        else
-        {
-            <p class="text-center">No hay sucursales disponibles.</p>
-        }
-
-    </div>
-</section>
-
-
 <!-- NOSOTROS -->
 <section class="about-section" id="nosotros">
 
     <div class="about-image">
-        <img src="~/img/nosotros.jpg" alt="Preparación de nuestras pizzas" />
+        <img src="~/images/nosotros.jpg" alt="Preparación de nuestras pizzas" />
     </div>
 
     <div class="about-content">

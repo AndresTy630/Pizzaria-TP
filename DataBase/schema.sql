@@ -12,6 +12,8 @@ CREATE TABLE Sucursal(
     direccion VARCHAR(150) NOT NULL,
     telefono VARCHAR(20),
     activa BOOLEAN NOT NULL DEFAULT TRUE,
+    latitud DOUBLE NULL,
+    longitud DOUBLE NULL,
 
     CONSTRAINT PK_Sucursal PRIMARY KEY (idSucursal)
 );
@@ -79,7 +81,7 @@ CREATE TABLE Pizza(
 
 
 -- ==========================================
--- 6. PEDIDOS
+-- 5. PEDIDOS
 -- ==========================================
 
 CREATE TABLE Pedido(
@@ -110,7 +112,7 @@ CREATE TABLE Pedido(
 
 
 -- ==========================================
--- 7. DETALLE DEL PEDIDO
+-- 6. DETALLE DEL PEDIDO
 -- ==========================================
 
 CREATE TABLE DetallePedido(

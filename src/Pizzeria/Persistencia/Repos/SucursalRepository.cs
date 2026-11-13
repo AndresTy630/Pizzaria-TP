@@ -37,4 +37,16 @@ public class SucursalRepository : RepoBase, ISucursalRepository
 
         return await connection.QueryAsync<SucursalReparto>(sql);
     }
+
+    public async Task<int> CrearAsync(Sucursal s)
+    {
+        using var connection = Connection;
+
+        const string sql = @"
+            INSERT INTO Sucursal (direccion, telefono, activa, latitud, longitud)
+            VALUES (@Direccion, @Telefono, TRUE, @Latitud, @Longitud);
+            SELECT LAST_INSERT_ID();";
+
+        return await connection.ExecuteScalarAsync<int>(sql, s);
+    }
 }

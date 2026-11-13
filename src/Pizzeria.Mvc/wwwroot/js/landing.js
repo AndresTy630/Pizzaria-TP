@@ -1,28 +1,22 @@
 document.addEventListener("DOMContentLoaded", function () {
   // MENÚ RESPONSIVE
-
   const boton = document.getElementById("menuToggle");
   const enlaces = document.getElementById("navLinks");
 
-  boton.addEventListener("click", function () {
-    enlaces.classList.toggle("show");
-  });
+  if (boton && enlaces) {
+    boton.addEventListener("click", () => enlaces.classList.toggle("show"));
+  }
 
-  // CARRUSEL
+  // CARRUSEL (desliza)
+  const track = document.getElementById("heroTrack");
 
-  const slides = document.querySelectorAll(".hero-slide");
+  if (track) {
+    const total = track.children.length;
+    let actual = 0;
 
-  let actual = 0;
-
-  setInterval(function () {
-    slides[actual].classList.remove("active");
-
-    actual++;
-
-    if (actual >= slides.length) {
-      actual = 0;
-    }
-
-    slides[actual].classList.add("active");
-  }, 5000);
+    setInterval(function () {
+      actual = (actual + 1) % total;
+      track.style.transform = `translateX(-${actual * 100}%)`;
+    }, 5000);
+  }
 });

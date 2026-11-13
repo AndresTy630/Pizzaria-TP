@@ -1,0 +1,98 @@
+@model SucursalCrearViewModel
+
+@{
+    Layout = "_DashboardLayout";
+    ViewData["Title"] = "Nueva sucursal";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+
+<h2 class="fw-bold mb-4">Nueva sucursal</h2>
+
+<div class="card shadow-sm border-0" style="max-width: 800px;">
+    <div class="card-body">
+        <form asp-action="Crear" method="post">
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Direccion" class="form-label">Dirección</label>
+                <div class="input-group">
+                    <input asp-for="Direccion" class="form-control" placeholder="Ej: Av. Corrientes 1234, Buenos Aires" />
+                    <button type="button" id="btnBuscar" class="btn btn-outline-danger">
+                        <i class="bi bi-search"></i> Buscar en el mapa
+                    </button>
+                </div>
+                <div id="msgBusqueda" class="small mt-1"></div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Telefono" class="form-label">Teléfono</label>
+                <input asp-for="Telefono" class="form-control" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Ubicación</label>
+                <div class="small text-muted mb-1">Buscá la dirección, hacé clic en el mapa o arrastrá el pin para ajustar.</div>
+                <div id="mapa" style="height: 380px; border-radius: .5rem;"></div>
+                <input type="hidden" asp-for="Latitud" id="lat" />
+                <input type="hidden" asp-for="Longitud" id="lng" />
+            </div>
+
+            <button type="submit" class="btn btn-danger">Guardar sucursal</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        const $ = id => document.getElementById(id);
+        const map = L.map('mapa').setView([-34.6037, -58.4], 11);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19, attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        let marker = null;
+
+        function ponerPin(lat, lng, zoom) {
+            if (!marker) {
+                marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                marker.on('dragend', () => guardar(marker.getLatLng()));
+            } else marker.setLatLng([lat, lng]);
+            guardar({ lat, lng });
+            if (zoom) map.setView([lat, lng], zoom);
+        }
+
+        function guardar(p) {
+            $('lat').value = p.lat.toFixed(6);   // siempre con punto
+            $('lng').value = p.lng.toFixed(6);
+        }
+
+        map.on('click', e => ponerPin(e.latlng.lat, e.latlng.lng));
+
+        // Si se vuelve a mostrar el formulario con error, recupera el pin
+        if ($('lat').value && $('lng').value)
+            ponerPin(parseFloat($('lat').value), parseFloat($('lng').value), 15);
+
+        async function buscar() {
+            const q = $('Direccion').value.trim();
+            const msg = $('msgBusqueda');
+            if (!q) { msg.className = 'small mt-1 text-danger'; msg.textContent = 'Escribí una dirección.'; return; }
+
+            msg.className = 'small mt-1 text-muted'; msg.textContent = 'Buscando...';
+            try {
+                const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ar&q=' + encodeURIComponent(q));
+                const d = await r.json();
+                if (!d.length) { msg.className = 'small mt-1 text-danger'; msg.textContent = 'No encontramos esa dirección. Marcala a mano en el mapa.'; return; }
+                ponerPin(parseFloat(d[0].lat), parseFloat(d[0].lon), 16);
+                msg.className = 'small mt-1 text-success'; msg.textContent = 'Ubicación encontrada. Podés ajustar el pin.';
+            } catch {
+                msg.className = 'small mt-1 text-danger'; msg.textContent = 'No se pudo buscar. Marcala a mano en el mapa.';
+            }
+        }
+
+        $('btnBuscar').addEventListener('click', buscar);
+        $('Direccion').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); buscar(); } });
+    </script>
+}

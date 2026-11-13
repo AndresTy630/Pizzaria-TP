@@ -12,14 +12,13 @@
     <link rel="stylesheet" href="~/css/landing.css" asp-append-version="true" />
 </head>
 
-<body>
+<body class="@ViewData["BodyClass"]">
 
-    <!-- NAVBAR -->
     <nav class="navbar-landing">
         <div class="nav-container">
 
             <a asp-controller="Home" asp-action="Index">
-                <img src="~/img/logo.png" alt="Amore a prima pizza" class="logo">
+                <img src="~/images/logo.png" alt="Amore a prima pizza" class="logo">
             </a>
 
             <button class="menu-toggle" id="menuToggle">
@@ -27,14 +26,20 @@
             </button>
 
             <div class="nav-links" id="navLinks">
-                <a href="#inicio">INICIO</a>
-                <a href="#menu">PRODUCTOS</a>
-                <a href="#nosotros">NOSOTROS</a>
-                <a href="#contacto">CONTACTO</a>
+                <a asp-controller="Home" asp-action="Index" asp-fragment="inicio">INICIO</a>
+                <a asp-controller="Home" asp-action="Index" asp-fragment="menu">PRODUCTOS</a>
+                <a asp-controller="Sucursales" asp-action="Index">SUCURSALES</a>
+                <a asp-controller="Home" asp-action="Index" asp-fragment="nosotros">NOSOTROS</a>
+                <a asp-controller="Home" asp-action="Index" asp-fragment="contacto">CONTACTO</a>
 
-                <a asp-controller="Account" asp-action="Login" class="login-link">
-                    INGRESAR
-                </a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Dashboard" asp-action="Index" class="login-link">MI PANEL</a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="login-link">INGRESAR</a>
+                }
             </div>
 
         </div>
@@ -50,7 +55,7 @@
         <div class="footer-content">
 
             <div>
-                <h2>AMORE A PRIMA PIZZA</h2>
+                <h2>AMAMOS LA PIZZA</h2>
                 <p>Una pasión que se comparte en cada porción.</p>
             </div>
 
@@ -63,7 +68,7 @@
         </div>
 
         <div class="footer-bottom">
-            © 2026 Amore a prima pizza.
+            © 2026 Miseal Piuca y Andrés Torrico.
         </div>
 
     </footer>

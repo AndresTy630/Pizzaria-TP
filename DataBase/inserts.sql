@@ -6,11 +6,11 @@ USE 5to_Pizzeria;
 -- ==========================================
 
 INSERT INTO Sucursal
-(direccion, telefono, activa)
+(direccion, telefono, activa, latitud, longitud)
 VALUES
-('Av. Corrientes 1234', '011-4567-8901', TRUE),
-('Av. Cabildo 2450', '011-4567-8902', TRUE),
-('Av. Rivadavia 5600', '011-4567-8903', TRUE);
+('Av. Corrientes 1234', '011-4567-8901', TRUE, -34.603700, -58.387800),
+('Av. Cabildo 2450',    '011-4567-8902', TRUE, -34.567500, -58.450500),
+('Av. Rivadavia 5600',  '011-4567-8903', TRUE, -34.619000, -58.444600);
 
 
 -- ==========================================
