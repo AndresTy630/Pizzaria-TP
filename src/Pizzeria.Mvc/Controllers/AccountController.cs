@@ -102,6 +102,11 @@ public class AccountController : Controller
             ModelState.AddModelError(string.Empty, ex.Message);
             return View(model);
         }
+        catch (Exception)
+        {
+            ModelState.AddModelError(string.Empty, "No pudimos crear la cuenta. Probá de nuevo en unos minutos.");
+            return View(model);
+        }
     }
 
     //LOGOUT

@@ -49,4 +49,16 @@ public class SucursalRepository : RepoBase, ISucursalRepository
 
         return await connection.ExecuteScalarAsync<int>(sql, s);
     }
+
+    public async Task<IEnumerable<int>> ObtenerRepartidoresAsync(int idSucursal)
+    {
+        using var connection = Connection;
+
+        const string sql = @"
+            SELECT idEmpleado
+            FROM Empleado
+            WHERE idSucursal = @IdSucursal AND rol = 2;";
+
+        return await connection.QueryAsync<int>(sql, new { IdSucursal = idSucursal });
+    }
 }

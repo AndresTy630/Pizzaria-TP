@@ -74,6 +74,14 @@ public class PedidoService : IPedidoService
             });
         }
 
+        if (tipoEntrega == TipoEntrega.Delivery)
+        {
+            var repartidores = (await _sucursalRepository.ObtenerRepartidoresAsync(idSucursal)).ToList();
+
+            if (repartidores.Count > 0)
+                pedido.IdRepartidor = repartidores[Random.Shared.Next(repartidores.Count)];
+        }
+
         return await CrearPedidoAsync(pedido);
     }
 

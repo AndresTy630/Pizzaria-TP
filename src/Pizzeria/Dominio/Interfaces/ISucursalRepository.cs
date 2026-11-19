@@ -7,5 +7,6 @@ namespace Pizzeria.Dominio.Interfaces
         Task<IEnumerable<Sucursal>> ObtenerActivasAsync();
         Task<IEnumerable<SucursalReparto>> ObtenerRepartoAsync();
         Task<int> CrearAsync(Sucursal sucursal);
+        Task<IEnumerable<int>> ObtenerRepartidoresAsync(int idSucursal);
     }
 }
