@@ -19,14 +19,14 @@ public class PedidosControllerTests
     private readonly Mock<IPedidoService> _pedidoService = new();
     private readonly Mock<IPizzaService> _pizzaService = new();
     private readonly Mock<IUsuarioService> _usuarioService = new();
-    private readonly Mock<ISucursalRepository> _sucursales = new();
+    private readonly Mock<ISucursalService> _sucursales = new();
     private readonly PedidosController _controller;
 
     public PedidosControllerTests()
     {
         _pizzaService.Setup(s => s.VerDisponiblesAsync()).ReturnsAsync(new List<Pizza>());
         _pizzaService.Setup(s => s.VerTodasAsync()).ReturnsAsync(new List<Pizza>());
-        _sucursales.Setup(s => s.ObtenerRepartoAsync()).ReturnsAsync(new List<SucursalReparto>());
+        _sucursales.Setup(s => s.VerRepartoAsync()).ReturnsAsync(new List<SucursalReparto>());
 
         _controller = new PedidosController(
             _pedidoService.Object, _pizzaService.Object, _usuarioService.Object, _sucursales.Object);

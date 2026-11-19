@@ -26,6 +26,7 @@ builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
 builder.Services.AddScoped<IPizzaService, PizzaService>();
 builder.Services.AddScoped<IPedidoService, PedidoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<ISucursalService, SucursalService>();
 
 // Hash de contraseñas
 builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();

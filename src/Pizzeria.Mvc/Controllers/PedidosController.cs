@@ -162,8 +162,6 @@ public class PedidosController : Controller
         var reparto = (await _sucursalRepository.ObtenerRepartoAsync()).ToList();
 
         model.Reparto = reparto;
-        model.Sucursales = reparto
-            .Select(s => new SelectListItem(s.Direccion, s.IdSucursal.ToString()))
-            .ToList();
+        model.Sucursales = reparto.Select(s => new SelectListItem(s.Direccion, s.IdSucursal.ToString())).ToList();
     }
 }

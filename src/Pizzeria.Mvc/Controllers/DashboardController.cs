@@ -24,8 +24,7 @@ public class DashboardController : Controller
         var usuarioId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var rol = User.FindFirstValue(ClaimTypes.Role) ?? "Cliente";
 
-        var pedidos = (await _pedidoService.ObtenerPedidosDeUsuarioAsync(usuarioId))
-            .OrderByDescending(p => p.FechaHora)
+        var pedidos = (await _pedidoService.ObtenerPedidosDeUsuarioAsync(usuarioId)).OrderByDescending(p => p.FechaHora)
             .Select(p => new PedidoResumenViewModel
             {
                 IdPedido = p.IdPedido,
